@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultado de Scoring — {{ cedula }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F0F4F8;
+      --surface:   #FFFFFF;
+      --border:    #E2E8F0;
+      --accent:    #1E40AF;
+      --text:      #0F172A;
+      --muted:     #64748B;
+      --green:     #166534;
+      --green-bg:  #F0FDF4;
+      --green-bd:  #86EFAC;
+      --red:       #991B1B;
+      --red-bg:    #FEF2F2;
+      --red-bd:    #FECACA;
+      --radius:    10px;
+      --shadow:    0 4px 24px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 3rem;
+      gap: 1.25rem;
+    }
+
+    /* ── Verdict banner ─────────────────────────────────────────────── */
+    .verdict {
+      width: 100%;
+      max-width: 700px;
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .verdict.aprobado  { background: var(--green-bg); border: 2px solid var(--green-bd); }
+    .verdict.rechazado { background: var(--red-bg);   border: 2px solid var(--red-bd);   }
+
+    .verdict-icon { font-size: 2.8rem; line-height: 1; }
+
+    .verdict-text h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+    .verdict.aprobado  .verdict-text h2 { color: var(--green); }
+    .verdict.rechazado .verdict-text h2 { color: var(--red); }
+
+    .verdict-text p { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+
+    /* ── Probability bar ────────────────────────────────────────────── */
+    .prob-wrap {
+      width: 100%;
+      max-width: 700px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem 2rem;
+    }
+    .prob-wrap h3 { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .9rem; }
+
+    .prob-bar-track {
+      height: 16px;
+      border-radius: 99px;
+      background: var(--red-bg);
+      border: 1px solid var(--red-bd);
+      overflow: hidden;
+      position: relative;
+    }
+    .prob-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #16a34a, #4ade80);
+      border-radius: 99px;
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .prob-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: .8rem;
+      margin-top: .5rem;
+    }
+    .prob-labels .lbl-red   { color: var(--red); font-weight: 600; }
+    .prob-labels .lbl-green { color: var(--green); font-weight: 600; }
+
+    /* ── Info cards grid ────────────────────────────────────────────── */
+    .grid-cards {
+      width: 100%;
+      max-width: 700px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+    }
+
+    .info-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.4rem 1.6rem;
+    }
+    .info-card h3 {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .6rem;
+      margin-bottom: .9rem;
+    }
+    .info-card.full { grid-column: 1 / -1; }
+
+    /* ── Data rows ──────────────────────────────────────────────────── */
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: .38rem 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: .88rem;
+      gap: .5rem;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-row .dk { color: var(--muted); flex-shrink: 0; }
+    .data-row .dv { font-weight: 600; text-align: right; }
+
+    /* ── Highlight metric ───────────────────────────────────────────── */
+    .metric-big {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-align: center;
+      padding: .5rem 0;
+    }
+    .metric-label { font-size: .78rem; color: var(--muted); text-align: center; margin-top: .2rem; }
+
+    /* ── Back button ────────────────────────────────────────────────── */
+    .btn-back {
+      display: inline-block;
+      margin-top: .5rem;
+      padding: .7rem 1.8rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .9rem;
+      transition: background .18s;
+    }
+    .btn-back:hover { background: #1e3a8a; }
+
+    @media (max-width: 540px) {
+      .grid-cards { grid-template-columns: 1fr; }
+      .verdict { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Verdict ── -->
+  <div class="verdict {% if aprobado %}aprobado{% else %}rechazado{% endif %}">
+    <div class="verdict-icon">{% if aprobado %}✅{% else %}❌{% endif %}</div>
+    <div class="verdict-text">
+      <h2>Crédito {% if aprobado %}Aprobado{% else %}Rechazado{% endif %}</h2>
+      <p>Cédula: <strong>{{ cedula }}</strong> — Evaluación completada por el modelo de ML.</p>
+    </div>
+  </div>
+
+  <!-- ── Barra de probabilidad ── -->
+  <div class="prob-wrap">
+    <h3>Probabilidad de aprobación</h3>
+    <div class="prob-bar-track">
+      <div class="prob-bar-fill" style="width: {{ prob_aprobado }}%;"></div>
+    </div>
+    <div class="prob-labels">
+      <span class="lbl-red">Rechazo: {{ prob_rechazado }}%</span>
+      <span class="lbl-green">Aprobación: {{ prob_aprobado }}%</span>
+    </div>
+  </div>
+
+  <!-- ── Grid de tarjetas ── -->
+  <div class="grid-cards">
+
+    <!-- Relación deuda / ingreso -->
+    <div class="info-card">
+      <h3>Ratio Deuda / Ingreso</h3>
+      <div class="metric-big">{{ relacion_deuda_ingreso }}</div>
+      <p class="metric-label">Total cuotas ÷ Ingreso neto mensual</p>
+    </div>
+
+    <!-- Score buró -->
+    <div class="info-card">
+      <h3>Score Buró de Crédito</h3>
+      <div class="metric-big">{{ datos_buro.score_bruto_actual }}</div>
+      <p class="metric-label">Perfil de riesgo: {{ datos_buro.perfil_riesgo }}</p>
+    </div>
+
+    <!-- Datos del formulario -->
+    <div class="info-card">
+      <h3>Datos del Solicitante</h3>
+      <div class="data-row">
+        <span class="dk">Edad</span>
+        <span class="dv">{{ datos_formulario.edad }} años</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Tipo de vivienda</span>
+        <span class="dv">{{ datos_formulario.tipo_vivienda }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Antigüedad vivienda</span>
+        <span class="dv">{{ datos_formulario.antiguedad_vivienda }} años</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Situación laboral</span>
+        <span class="dv">{{ datos_formulario.situacion_laboral }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Antigüedad laboral</span>
+        <span class="dv">{{ datos_formulario.antiguedad_laboral }} años</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Ingreso neto mensual</span>
+        <span class="dv">Gs. {{ datos_formulario.ingreso_neto_mensual|floatformat:0 }}</span>
+      </div>
+    </div>
+
+    <!-- Datos del buró -->
+    <div class="info-card">
+      <h3>Buró de Crédito</h3>
+      <div class="data-row">
+        <span class="dk">Total cuotas deudas</span>
+        <span class="dv">Gs. {{ datos_buro.total_cuotas_deudas_actuales|floatformat:0 }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Créditos activos</span>
+        <span class="dv">{{ datos_buro.cantidad_creditos_activos }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Saldo deuda</span>
+        <span class="dv">Gs. {{ datos_buro.saldo_deuda|floatformat:0 }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Peor atraso</span>
+        <span class="dv">{{ datos_buro.peor_atraso }} días</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Cuentas en mora</span>
+        <span class="dv">{{ datos_buro.cantidad_cuentas_en_mora }}</span>
+      </div>
+    </div>
+
+  </div><!-- /.grid-cards -->
+
+  <a href="{% url 'scoring_app:solicitud' %}" class="btn-back">← Nueva Evaluación</a>
+
+</body>
+</html>

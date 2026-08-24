@@ -1,0 +1,22 @@
+# Entornos virtuales
+env_django/
+venv/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Bases de datos locales
+db.sqlite3
+*.db
+*.duckdb
+
+# Archivos de entorno y secretos
+.env
+
+# Archivos .exe
+*.exe
+
+# Ignorar archivos temporales de Office
+~$*.xlsx
+~$*.docx

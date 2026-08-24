@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solicitud de Crédito — Sistema de Scoring</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F0F4F8;
+      --surface:   #FFFFFF;
+      --border:    #CBD5E1;
+      --accent:    #1E40AF;       /* azul corporativo / bancario          */
+      --accent-lt: #EFF6FF;
+      --success:   #166534;
+      --danger:    #991B1B;
+      --text:      #0F172A;
+      --muted:     #64748B;
+      --radius:    10px;
+      --shadow:    0 4px 24px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem;
+    }
+
+    /* ── Card ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 660px;
+      padding: 2.5rem 2.25rem;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────────── */
+    .card-header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .card-header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -.01em;
+    }
+    .card-header p {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: .3rem;
+    }
+
+    /* ── Error alert ───────────────────────────────────────────────────── */
+    .alert {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-left: 4px solid var(--danger);
+      color: var(--danger);
+      border-radius: var(--radius);
+      padding: .85rem 1.1rem;
+      font-size: .88rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Form layout ───────────────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem 1.4rem;
+    }
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; gap: .35rem; }
+
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    input, select {
+      width: 100%;
+      padding: .6rem .85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: .95rem;
+      color: var(--text);
+      background: #FAFAFA;
+      transition: border-color .18s, box-shadow .18s;
+      appearance: none;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(30,64,175,.15);
+      background: #fff;
+    }
+
+    .field-error {
+      font-size: .78rem;
+      color: var(--danger);
+    }
+
+    /* ── Submit ────────────────────────────────────────────────────────── */
+    .btn-submit {
+      margin-top: 1.75rem;
+      width: 100%;
+      padding: .85rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .01em;
+      transition: background .18s, transform .1s;
+    }
+    .btn-submit:hover  { background: #1e3a8a; }
+    .btn-submit:active { transform: scale(.98); }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    .card-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 540px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .card { padding: 1.75rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <h1>Evaluación de Crédito</h1>
+    <p>Complete los datos del solicitante para calcular el score crediticio.</p>
+  </div>
+
+  {% if error %}
+    <div class="alert">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-grid">
+
+      <!-- Cédula (ancho completo) -->
+      <div class="field full">
+        <label for="{{ form.cedula.id_for_label }}">{{ form.cedula.label }}</label>
+        {{ form.cedula }}
+        {% if form.cedula.errors %}
+          <span class="field-error">{{ form.cedula.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Edad -->
+      <div class="field">
+        <label for="{{ form.edad.id_for_label }}">{{ form.edad.label }}</label>
+        {{ form.edad }}
+        {% if form.edad.errors %}
+          <span class="field-error">{{ form.edad.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Tipo de Vivienda -->
+      <div class="field">
+        <label for="{{ form.tipo_vivienda.id_for_label }}">{{ form.tipo_vivienda.label }}</label>
+        {{ form.tipo_vivienda }}
+        {% if form.tipo_vivienda.errors %}
+          <span class="field-error">{{ form.tipo_vivienda.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Antigüedad Vivienda -->
+      <div class="field">
+        <label for="{{ form.antiguedad_vivienda.id_for_label }}">{{ form.antiguedad_vivienda.label }}</label>
+        {{ form.antiguedad_vivienda }}
+        {% if form.antiguedad_vivienda.errors %}
+          <span class="field-error">{{ form.antiguedad_vivienda.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Situación Laboral -->
+      <div class="field">
+        <label for="{{ form.situacion_laboral.id_for_label }}">{{ form.situacion_laboral.label }}</label>
+        {{ form.situacion_laboral }}
+        {% if form.situacion_laboral.errors %}
+          <span class="field-error">{{ form.situacion_laboral.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Antigüedad Laboral -->
+      <div class="field">
+        <label for="{{ form.antiguedad_laboral.id_for_label }}">{{ form.antiguedad_laboral.label }}</label>
+        {{ form.antiguedad_laboral }}
+        {% if form.antiguedad_laboral.errors %}
+          <span class="field-error">{{ form.antiguedad_laboral.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Ingreso Neto (ancho completo) -->
+      <div class="field full">
+        <label for="{{ form.ingreso_neto_mensual.id_for_label }}">{{ form.ingreso_neto_mensual.label }}</label>
+        {{ form.ingreso_neto_mensual }}
+        {% if form.ingreso_neto_mensual.errors %}
+          <span class="field-error">{{ form.ingreso_neto_mensual.errors|join:", " }}</span>
+        {% endif %}
+      </div>
+
+    </div><!-- /.form-grid -->
+
+    <button type="submit" class="btn-submit">Calcular Score Crediticio →</button>
+  </form>
+</div>
+
+<p class="card-footer">Sistema de Scoring Crediticio — Tesis Universitaria</p>
+
+</body>
+</html>
