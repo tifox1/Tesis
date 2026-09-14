@@ -8,20 +8,27 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #F0F4F8;
-      --surface:   #FFFFFF;
-      --border:    #E2E8F0;
-      --accent:    #1E40AF;
-      --text:      #0F172A;
-      --muted:     #64748B;
-      --green:     #166534;
-      --green-bg:  #F0FDF4;
-      --green-bd:  #86EFAC;
-      --red:       #991B1B;
-      --red-bg:    #FEF2F2;
-      --red-bd:    #FECACA;
-      --radius:    10px;
-      --shadow:    0 4px 24px rgba(0,0,0,.08);
+      --bg:         #F0F4F8;
+      --surface:    #FFFFFF;
+      --border:     #E2E8F0;
+      --accent:     #1E40AF;
+      --text:       #0F172A;
+      --muted:      #64748B;
+
+      --green:      #166534;
+      --green-bg:   #F0FDF4;
+      --green-bd:   #86EFAC;
+
+      --yellow:     #92400E;
+      --yellow-bg:  #FFFBEB;
+      --yellow-bd:  #FCD34D;
+
+      --red:        #991B1B;
+      --red-bg:     #FEF2F2;
+      --red-bd:     #FECACA;
+
+      --radius:     10px;
+      --shadow:     0 4px 24px rgba(0,0,0,.08);
     }
 
     body {
@@ -36,180 +43,331 @@
       gap: 1.25rem;
     }
 
-    /* ── Verdict banner ─────────────────────────────────────────────── */
+    /* ── Verdict banner ── */
     .verdict {
-      width: 100%;
-      max-width: 700px;
+      width: 100%; max-width: 740px;
       border-radius: var(--radius);
       padding: 1.75rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
+      display: flex; align-items: center; gap: 1.25rem;
       box-shadow: var(--shadow);
     }
-    .verdict.aprobado  { background: var(--green-bg); border: 2px solid var(--green-bd); }
-    .verdict.rechazado { background: var(--red-bg);   border: 2px solid var(--red-bd);   }
+    .verdict.aprobado        { background: var(--green-bg);  border: 2px solid var(--green-bd); }
+    .verdict.rechazado_alt   { background: var(--yellow-bg); border: 2px solid var(--yellow-bd); }
+    .verdict.rechazado_noalt { background: var(--red-bg);    border: 2px solid var(--red-bd); }
 
     .verdict-icon { font-size: 2.8rem; line-height: 1; }
+    .verdict-text h2 { font-size: 1.4rem; font-weight: 800; }
+    .verdict.aprobado        .verdict-text h2 { color: var(--green); }
+    .verdict.rechazado_alt   .verdict-text h2 { color: var(--yellow); }
+    .verdict.rechazado_noalt .verdict-text h2 { color: var(--red); }
+    .verdict-text p { font-size: .88rem; color: var(--muted); margin-top: .35rem; }
 
-    .verdict-text h2 {
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: -.01em;
-    }
-    .verdict.aprobado  .verdict-text h2 { color: var(--green); }
-    .verdict.rechazado .verdict-text h2 { color: var(--red); }
-
-    .verdict-text p { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
-
-    /* ── Probability bar ────────────────────────────────────────────── */
-    .prob-wrap {
-      width: 100%;
-      max-width: 700px;
+    /* ── Bloques principales ── */
+    .block {
+      width: 100%; max-width: 740px;
       background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 1.5rem 2rem;
     }
-    .prob-wrap h3 { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .9rem; }
-
-    .prob-bar-track {
-      height: 16px;
-      border-radius: 99px;
-      background: var(--red-bg);
-      border: 1px solid var(--red-bd);
-      overflow: hidden;
-      position: relative;
+    .block-title {
+      font-size: .75rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .6rem; margin-bottom: 1rem;
     }
-    .prob-bar-fill {
+
+    /* ── Barra de probabilidad ── */
+    .prob-track {
+      height: 16px; border-radius: 99px;
+      background: var(--red-bg); border: 1px solid var(--red-bd);
+      overflow: hidden;
+    }
+    .prob-fill {
       height: 100%;
       background: linear-gradient(90deg, #16a34a, #4ade80);
       border-radius: 99px;
       transition: width .6s cubic-bezier(.4,0,.2,1);
     }
-
     .prob-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: .8rem;
-      margin-top: .5rem;
+      display: flex; justify-content: space-between;
+      font-size: .8rem; margin-top: .5rem; font-weight: 600;
     }
-    .prob-labels .lbl-red   { color: var(--red); font-weight: 600; }
-    .prob-labels .lbl-green { color: var(--green); font-weight: 600; }
+    .lbl-red   { color: var(--red); }
+    .lbl-green { color: var(--green); }
 
-    /* ── Info cards grid ────────────────────────────────────────────── */
+    /* ── Métricas grandes ── */
+    .metrics-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    }
+    .metric {
+      background: var(--bg); border-radius: 8px;
+      padding: 1rem; text-align: center;
+    }
+    .metric-val {
+      font-size: 1.7rem; font-weight: 800; color: var(--accent);
+    }
+    .metric-lbl { font-size: .75rem; color: var(--muted); margin-top: .25rem; }
+
+    /* ── Data rows ── */
     .grid-cards {
-      width: 100%;
-      max-width: 700px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.1rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem;
     }
-
     .info-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.4rem 1.6rem;
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 1.4rem 1.6rem;
     }
     .info-card h3 {
-      font-size: .78rem;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .05em;
+      font-size: .75rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .05em;
       border-bottom: 1px solid var(--border);
-      padding-bottom: .6rem;
-      margin-bottom: .9rem;
+      padding-bottom: .6rem; margin-bottom: .9rem;
     }
     .info-card.full { grid-column: 1 / -1; }
-
-    /* ── Data rows ──────────────────────────────────────────────────── */
     .data-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: .38rem 0;
-      border-bottom: 1px dashed var(--border);
-      font-size: .88rem;
-      gap: .5rem;
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: .38rem 0; border-bottom: 1px dashed var(--border);
+      font-size: .88rem; gap: .5rem;
     }
     .data-row:last-child { border-bottom: none; }
     .data-row .dk { color: var(--muted); flex-shrink: 0; }
     .data-row .dv { font-weight: 600; text-align: right; }
 
-    /* ── Highlight metric ───────────────────────────────────────────── */
-    .metric-big {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--accent);
-      text-align: center;
-      padding: .5rem 0;
+    /* ── Motivos de rechazo ── */
+    .motivos-list {
+      list-style: none; display: flex; flex-direction: column; gap: .6rem;
     }
-    .metric-label { font-size: .78rem; color: var(--muted); text-align: center; margin-top: .2rem; }
+    .motivos-list li {
+      display: flex; align-items: flex-start; gap: .6rem;
+      font-size: .88rem; color: var(--red);
+      background: var(--red-bg); border: 1px solid var(--red-bd);
+      border-radius: 8px; padding: .6rem .85rem;
+    }
+    .motivos-list li::before { content: "✗"; font-weight: 700; flex-shrink: 0; }
 
-    /* ── Back button ────────────────────────────────────────────────── */
+    /* ── Tarjetas de alternativas ── */
+    .alt-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-top: .25rem;
+    }
+    .alt-card {
+      border: 2px solid var(--yellow-bd);
+      background: var(--yellow-bg);
+      border-radius: var(--radius); padding: 1.1rem 1.2rem;
+    }
+    .alt-card h4 {
+      font-size: .88rem; font-weight: 700; color: var(--yellow);
+      margin-bottom: .6rem;
+    }
+    .alt-card .alt-row {
+      display: flex; justify-content: space-between;
+      font-size: .82rem; padding: .25rem 0;
+      border-bottom: 1px dashed #FCD34D;
+    }
+    .alt-card .alt-row:last-child { border-bottom: none; }
+    .alt-card .alt-row .ak { color: var(--muted); }
+    .alt-card .alt-row .av { font-weight: 700; color: var(--yellow); }
+    .alt-card .alt-desc {
+      font-size: .78rem; color: var(--muted); margin-top: .7rem;
+      font-style: italic; line-height: 1.4;
+    }
+
+    /* ── Plan aprobado ── */
+    .plan-aprobado {
+      background: var(--green-bg); border: 2px solid var(--green-bd);
+      border-radius: var(--radius); padding: 1.2rem 1.5rem;
+    }
+    .plan-aprobado h4 { font-size: .9rem; font-weight: 700; color: var(--green); margin-bottom: .7rem; }
+    .plan-aprobado .alt-row {
+      display: flex; justify-content: space-between;
+      font-size: .88rem; padding: .3rem 0;
+      border-bottom: 1px dashed var(--green-bd);
+    }
+    .plan-aprobado .alt-row:last-child { border-bottom: none; }
+    .plan-aprobado .alt-row .ak { color: var(--muted); }
+    .plan-aprobado .alt-row .av { font-weight: 700; color: var(--green); }
+
+    /* ── Sugerencia rechazo sin alt ── */
+    .sugerencia {
+      background: #FEF2F2; border: 1px solid var(--red-bd);
+      border-radius: var(--radius); padding: 1rem 1.25rem;
+      font-size: .88rem; color: var(--red); line-height: 1.6;
+    }
+
+    /* ── Botón ── */
     .btn-back {
-      display: inline-block;
-      margin-top: .5rem;
+      display: inline-block; margin-top: .5rem;
       padding: .7rem 1.8rem;
-      background: var(--accent);
-      color: #fff;
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-weight: 700;
-      font-size: .9rem;
+      background: var(--accent); color: #fff;
+      border-radius: var(--radius); text-decoration: none;
+      font-weight: 700; font-size: .9rem;
       transition: background .18s;
     }
     .btn-back:hover { background: #1e3a8a; }
 
-    @media (max-width: 540px) {
-      .grid-cards { grid-template-columns: 1fr; }
-      .verdict { flex-direction: column; text-align: center; }
+    @media (max-width: 600px) {
+      .grid-cards  { grid-template-columns: 1fr; }
+      .metrics-row { grid-template-columns: 1fr 1fr; }
+      .verdict     { flex-direction: column; text-align: center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── Verdict ── -->
-  <div class="verdict {% if aprobado %}aprobado{% else %}rechazado{% endif %}">
-    <div class="verdict-icon">{% if aprobado %}✅{% else %}❌{% endif %}</div>
+  <!-- ══ BANNER DE VEREDICTO ══ -->
+  {% if escenario == "aprobado" %}
+  <div class="verdict aprobado">
+    <div class="verdict-icon">✅</div>
     <div class="verdict-text">
-      <h2>Crédito {% if aprobado %}Aprobado{% else %}Rechazado{% endif %}</h2>
-      <p>Cédula: <strong>{{ cedula }}</strong> — Evaluación completada por el modelo de ML.</p>
+      <h2>Crédito Aprobado</h2>
+      <p>Cédula <strong>{{ cedula }}</strong> — El cliente califica para el <strong>{{ plan_nombre }}</strong>.</p>
     </div>
   </div>
 
-  <!-- ── Barra de probabilidad ── -->
-  <div class="prob-wrap">
-    <h3>Probabilidad de aprobación</h3>
-    <div class="prob-bar-track">
-      <div class="prob-bar-fill" style="width: {{ prob_aprobado }}%;"></div>
+  {% elif escenario == "rechazado_con_alt" %}
+  <div class="verdict rechazado_alt">
+    <div class="verdict-icon">⚠️</div>
+    <div class="verdict-text">
+      <h2>No califica para el plan solicitado</h2>
+      <p>Cédula <strong>{{ cedula }}</strong> — Hay <strong>{{ alternativas|length }} oferta(s) alternativa(s)</strong> disponibles para este perfil.</p>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="verdict rechazado_noalt">
+    <div class="verdict-icon">❌</div>
+    <div class="verdict-text">
+      <h2>Solicitud Rechazada</h2>
+      <p>Cédula <strong>{{ cedula }}</strong> — El perfil no cumple los requisitos mínimos en este momento.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ BARRA DE PROBABILIDAD ══ -->
+  <div class="block">
+    <div class="block-title">Probabilidad del Modelo ML</div>
+    <div class="prob-track">
+      <div class="prob-fill" style="width: {{ prob_aprobado }}%;"></div>
     </div>
     <div class="prob-labels">
-      <span class="lbl-red">Rechazo: {{ prob_rechazado }}%</span>
-      <span class="lbl-green">Aprobación: {{ prob_aprobado }}%</span>
+      <span class="lbl-red">Riesgo de default: {{ prob_rechazado }}%</span>
+      <span class="lbl-green">Probabilidad de pago: {{ prob_aprobado }}%</span>
     </div>
   </div>
 
-  <!-- ── Grid de tarjetas ── -->
-  <div class="grid-cards">
-
-    <!-- Relación deuda / ingreso -->
-    <div class="info-card">
-      <h3>Ratio Deuda / Ingreso</h3>
-      <div class="metric-big">{{ relacion_deuda_ingreso }}</div>
-      <p class="metric-label">Total cuotas ÷ Ingreso neto mensual</p>
+  <!-- ══ MÉTRICAS CLAVE ══ -->
+  <div class="block">
+    <div class="block-title">Indicadores Financieros del Cliente</div>
+    <div class="metrics-row">
+      <div class="metric">
+        <div class="metric-val">{{ score }}</div>
+        <div class="metric-lbl">Score crediticio</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">{{ pd }}%</div>
+        <div class="metric-lbl">Prob. de default</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">{{ relacion_deuda_ingreso }}</div>
+        <div class="metric-lbl">Ratio deuda / ingreso</div>
+      </div>
     </div>
+  </div>
 
-    <!-- Score buró -->
-    <div class="info-card">
-      <h3>Score Buró de Crédito</h3>
-      <div class="metric-big">{{ datos_buro.score_bruto_actual }}</div>
-      <p class="metric-label">Perfil de riesgo: {{ datos_buro.perfil_riesgo }}</p>
+  <!-- ══ ESCENARIO A: APROBADO ══ -->
+  {% if escenario == "aprobado" %}
+  <div class="block">
+    <div class="block-title">Plan Aprobado — {{ plan_nombre }}</div>
+    <div class="plan-aprobado">
+      <h4>✅ Condiciones del préstamo aprobado</h4>
+      <div class="alt-row">
+        <span class="ak">Monto solicitado</span>
+        <span class="av">Gs. {{ monto_solicitado|floatformat:0 }}</span>
+      </div>
+      <div class="alt-row">
+        <span class="ak">Plazo</span>
+        <span class="av">{{ plazo_solicitado }} meses</span>
+      </div>
+      <div class="alt-row">
+        <span class="ak">Cuota mensual estimada</span>
+        <span class="av">Gs. {{ cuota_calculada|floatformat:0 }}</span>
+      </div>
+      <div class="alt-row">
+        <span class="ak">Monto preaprobado máximo</span>
+        <span class="av">Gs. {{ monto_preaprobado|floatformat:0 }}</span>
+      </div>
     </div>
+  </div>
+  {% endif %}
 
-    <!-- Datos del formulario -->
+  <!-- ══ ESCENARIO B: RECHAZADO CON ALTERNATIVAS ══ -->
+  {% if escenario == "rechazado_con_alt" %}
+  <div class="block">
+    <div class="block-title">Motivos de Rechazo</div>
+    <ul class="motivos-list">
+      {% for motivo in motivos_rechazo %}
+        <li>{{ motivo }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Ofertas Alternativas Disponibles</div>
+    <div class="alt-grid">
+      {% for alt in alternativas %}
+      <div class="alt-card">
+        <h4>{{ alt.nombre_plan }}</h4>
+        <div class="alt-row">
+          <span class="ak">Monto</span>
+          <span class="av">Gs. {{ alt.monto_sugerido|floatformat:0 }}</span>
+        </div>
+        <div class="alt-row">
+          <span class="ak">Plazo</span>
+          <span class="av">{{ alt.plazo_meses }} meses</span>
+        </div>
+        <div class="alt-row">
+          <span class="ak">Tasa anual</span>
+          <span class="av">{{ alt.tasa_anual|floatformat:0 }}%</span>
+        </div>
+        <div class="alt-row">
+          <span class="ak">Cuota estimada</span>
+          <span class="av">Gs. {{ alt.cuota_estimada|floatformat:0 }}</span>
+        </div>
+        <p class="alt-desc">{{ alt.descripcion }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ ESCENARIO C: RECHAZADO SIN ALTERNATIVAS ══ -->
+  {% if escenario == "rechazado_sin_alt" %}
+  <div class="block">
+    <div class="block-title">Motivos de Rechazo</div>
+    <ul class="motivos-list">
+      {% for motivo in motivos_rechazo %}
+        <li>{{ motivo }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Recomendaciones para Mejorar el Perfil</div>
+    <div class="sugerencia">
+      El score actual de <strong>{{ score }} puntos</strong> no alcanza los umbrales mínimos de ningún plan disponible.
+      Para mejorar su situación crediticia se sugiere:
+      <ul style="margin-top:.6rem; padding-left:1.2rem; display:flex; flex-direction:column; gap:.4rem;">
+        <li>Reducir las deudas vigentes para bajar el ratio deuda/ingreso.</li>
+        <li>Mantener pagos al día durante al menos 3 meses consecutivos.</li>
+        <li>Evitar la apertura de nuevos créditos en el corto plazo.</li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ RESUMEN DE DATOS ══ -->
+  <div class="grid-cards" style="width:100%; max-width:740px;">
+
     <div class="info-card">
       <h3>Datos del Solicitante</h3>
       <div class="data-row">
@@ -238,12 +396,15 @@
       </div>
     </div>
 
-    <!-- Datos del buró -->
     <div class="info-card">
       <h3>Buró de Crédito</h3>
       <div class="data-row">
-        <span class="dk">Total cuotas deudas</span>
-        <span class="dv">Gs. {{ datos_buro.total_cuotas_deudas_actuales|floatformat:0 }}</span>
+        <span class="dk">Score buró</span>
+        <span class="dv">{{ datos_buro.score_bruto_actual }}</span>
+      </div>
+      <div class="data-row">
+        <span class="dk">Perfil de riesgo</span>
+        <span class="dv">{{ datos_buro.perfil_riesgo }}</span>
       </div>
       <div class="data-row">
         <span class="dk">Créditos activos</span>
@@ -261,9 +422,13 @@
         <span class="dk">Cuentas en mora</span>
         <span class="dv">{{ datos_buro.cantidad_cuentas_en_mora }}</span>
       </div>
+      <div class="data-row">
+        <span class="dk">Total cuotas deudas</span>
+        <span class="dv">Gs. {{ datos_buro.total_cuotas_deudas_actuales|floatformat:0 }}</span>
+      </div>
     </div>
 
-  </div><!-- /.grid-cards -->
+  </div>
 
   <a href="{% url 'consulta_scoring_app:solicitud' %}" class="btn-back">← Nueva Evaluación</a>
 

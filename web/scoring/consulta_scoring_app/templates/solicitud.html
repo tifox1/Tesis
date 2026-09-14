@@ -5,16 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solicitud de Crédito — Sistema de Scoring</title>
   <style>
-    /* ── Reset & Base ──────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --bg:        #F0F4F8;
       --surface:   #FFFFFF;
       --border:    #CBD5E1;
-      --accent:    #1E40AF;       /* azul corporativo / bancario          */
+      --accent:    #1E40AF;
       --accent-lt: #EFF6FF;
-      --success:   #166534;
       --danger:    #991B1B;
       --text:      #0F172A;
       --muted:     #64748B;
@@ -33,35 +31,39 @@
       padding: 2.5rem 1rem;
     }
 
-    /* ── Card ──────────────────────────────────────────────────────────── */
     .card {
       background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       width: 100%;
-      max-width: 660px;
+      max-width: 700px;
       padding: 2.5rem 2.25rem;
     }
 
-    /* ── Header ────────────────────────────────────────────────────────── */
+    /* ── Header ── */
     .card-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 1rem;
       margin-bottom: 1.75rem;
     }
-    .card-header h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
+    .card-header h1 { font-size: 1.35rem; font-weight: 700; color: var(--accent); }
+    .card-header p  { font-size: .85rem; color: var(--muted); margin-top: .3rem; }
+
+    /* ── Secciones ── */
+    .section-title {
+      font-size: .72rem;
+      font-weight: 800;
       color: var(--accent);
-      letter-spacing: -.01em;
-    }
-    .card-header p {
-      font-size: .85rem;
-      color: var(--muted);
-      margin-top: .3rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      background: var(--accent-lt);
+      border-left: 3px solid var(--accent);
+      padding: .45rem .75rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1.5rem 0 1rem;
     }
 
-    /* ── Error alert ───────────────────────────────────────────────────── */
+    /* ── Alert ── */
     .alert {
       background: #FEF2F2;
       border: 1px solid #FECACA;
@@ -73,7 +75,7 @@
       margin-bottom: 1.5rem;
     }
 
-    /* ── Form layout ───────────────────────────────────────────────────── */
+    /* ── Grid ── */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -84,7 +86,7 @@
     .field { display: flex; flex-direction: column; gap: .35rem; }
 
     label {
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
@@ -108,13 +110,31 @@
       box-shadow: 0 0 0 3px rgba(30,64,175,.15);
       background: #fff;
     }
-
-    .field-error {
-      font-size: .78rem;
-      color: var(--danger);
+    input:disabled, select:disabled {
+      background: #F1F5F9;
+      color: var(--muted);
+      cursor: not-allowed;
     }
 
-    /* ── Submit ────────────────────────────────────────────────────────── */
+    .field-error { font-size: .78rem; color: var(--danger); }
+
+    /* ── Info de rango del plan ── */
+    .plan-info {
+      display: none;
+      background: var(--accent-lt);
+      border: 1px solid #BFDBFE;
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      font-size: .82rem;
+      color: var(--accent);
+      margin-top: .5rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .plan-info.visible { display: flex; }
+    .plan-info span { font-weight: 600; }
+
+    /* ── Submit ── */
     .btn-submit {
       margin-top: 1.75rem;
       width: 100%;
@@ -126,13 +146,11 @@
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      letter-spacing: .01em;
       transition: background .18s, transform .1s;
     }
     .btn-submit:hover  { background: #1e3a8a; }
     .btn-submit:active { transform: scale(.98); }
 
-    /* ── Footer ────────────────────────────────────────────────────────── */
     .card-footer {
       margin-top: 1.5rem;
       text-align: center;
@@ -151,7 +169,7 @@
 <div class="card">
   <div class="card-header">
     <h1>Evaluación de Crédito</h1>
-    <p>Complete los datos del solicitante para calcular el score crediticio.</p>
+    <p>Complete los datos del solicitante para calcular el score crediticio y la decisión de crédito.</p>
   </div>
 
   {% if error %}
@@ -160,78 +178,152 @@
 
   <form method="post" novalidate>
     {% csrf_token %}
+
+    <!-- ══ SECCIÓN 1: Datos del solicitante ══ -->
+    <div class="section-title">Datos del Solicitante</div>
     <div class="form-grid">
 
-      <!-- Cédula (ancho completo) -->
       <div class="field full">
         <label for="{{ form.cedula.id_for_label }}">{{ form.cedula.label }}</label>
         {{ form.cedula }}
-        {% if form.cedula.errors %}
-          <span class="field-error">{{ form.cedula.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.cedula.errors %}<span class="field-error">{{ form.cedula.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Edad -->
       <div class="field">
         <label for="{{ form.edad.id_for_label }}">{{ form.edad.label }}</label>
         {{ form.edad }}
-        {% if form.edad.errors %}
-          <span class="field-error">{{ form.edad.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.edad.errors %}<span class="field-error">{{ form.edad.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Tipo de Vivienda -->
       <div class="field">
         <label for="{{ form.tipo_vivienda.id_for_label }}">{{ form.tipo_vivienda.label }}</label>
         {{ form.tipo_vivienda }}
-        {% if form.tipo_vivienda.errors %}
-          <span class="field-error">{{ form.tipo_vivienda.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.tipo_vivienda.errors %}<span class="field-error">{{ form.tipo_vivienda.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Antigüedad Vivienda -->
       <div class="field">
         <label for="{{ form.antiguedad_vivienda.id_for_label }}">{{ form.antiguedad_vivienda.label }}</label>
         {{ form.antiguedad_vivienda }}
-        {% if form.antiguedad_vivienda.errors %}
-          <span class="field-error">{{ form.antiguedad_vivienda.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.antiguedad_vivienda.errors %}<span class="field-error">{{ form.antiguedad_vivienda.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Situación Laboral -->
       <div class="field">
         <label for="{{ form.situacion_laboral.id_for_label }}">{{ form.situacion_laboral.label }}</label>
         {{ form.situacion_laboral }}
-        {% if form.situacion_laboral.errors %}
-          <span class="field-error">{{ form.situacion_laboral.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.situacion_laboral.errors %}<span class="field-error">{{ form.situacion_laboral.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Antigüedad Laboral -->
       <div class="field">
         <label for="{{ form.antiguedad_laboral.id_for_label }}">{{ form.antiguedad_laboral.label }}</label>
         {{ form.antiguedad_laboral }}
-        {% if form.antiguedad_laboral.errors %}
-          <span class="field-error">{{ form.antiguedad_laboral.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.antiguedad_laboral.errors %}<span class="field-error">{{ form.antiguedad_laboral.errors|join:", " }}</span>{% endif %}
       </div>
 
-      <!-- Ingreso Neto (ancho completo) -->
       <div class="field full">
         <label for="{{ form.ingreso_neto_mensual.id_for_label }}">{{ form.ingreso_neto_mensual.label }}</label>
         {{ form.ingreso_neto_mensual }}
-        {% if form.ingreso_neto_mensual.errors %}
-          <span class="field-error">{{ form.ingreso_neto_mensual.errors|join:", " }}</span>
-        {% endif %}
+        {% if form.ingreso_neto_mensual.errors %}<span class="field-error">{{ form.ingreso_neto_mensual.errors|join:", " }}</span>{% endif %}
       </div>
 
-    </div><!-- /.form-grid -->
+    </div>
 
-    <button type="submit" class="btn-submit">Calcular Score Crediticio →</button>
+    <!-- ══ SECCIÓN 2: Solicitud del crédito ══ -->
+    <div class="section-title">Solicitud del Crédito</div>
+    <div class="form-grid">
+
+      <!-- Plan solicitado -->
+      <div class="field full">
+        <label for="{{ form.plan_solicitado.id_for_label }}">{{ form.plan_solicitado.label }}</label>
+        {{ form.plan_solicitado }}
+        {% if form.plan_solicitado.errors %}<span class="field-error">{{ form.plan_solicitado.errors|join:", " }}</span>{% endif %}
+        <!-- Info dinámica del plan seleccionado -->
+        <div class="plan-info" id="plan-info">
+          Monto: <span id="info-monto">—</span> &nbsp;|&nbsp;
+          Plazo: <span id="info-plazo">—</span> &nbsp;|&nbsp;
+          Tasa: <span id="info-tasa">—</span>
+        </div>
+      </div>
+
+      <!-- Monto solicitado -->
+      <div class="field">
+        <label for="{{ form.monto_solicitado.id_for_label }}">{{ form.monto_solicitado.label }}</label>
+        {{ form.monto_solicitado }}
+        {% if form.monto_solicitado.errors %}<span class="field-error">{{ form.monto_solicitado.errors|join:", " }}</span>{% endif %}
+      </div>
+
+      <!-- Plazo -->
+      <div class="field">
+        <label for="{{ form.plazo_meses.id_for_label }}">{{ form.plazo_meses.label }}</label>
+        {{ form.plazo_meses }}
+        {% if form.plazo_meses.errors %}<span class="field-error">{{ form.plazo_meses.errors|join:", " }}</span>{% endif %}
+      </div>
+
+    </div>
+
+    <button type="submit" class="btn-submit">Calcular Score y Decisión →</button>
   </form>
 </div>
 
 <p class="card-footer">Sistema de Scoring Crediticio — Tesis Universitaria</p>
+
+<!-- Catálogo de planes inyectado desde Django para validación JS -->
+<script>
+  const CATALOGO = {{ catalogo_json|safe }};
+
+  const TASAS = {
+    microcredito_express: "26% anual",
+    prestamo_personal:    "22% anual",
+    credito_platino:      "16% anual",
+  };
+
+  const planSelect  = document.getElementById("{{ form.plan_solicitado.id_for_label }}");
+  const montoInput  = document.getElementById("{{ form.monto_solicitado.id_for_label }}");
+  const plazoInput  = document.getElementById("{{ form.plazo_meses.id_for_label }}");
+  const planInfo    = document.getElementById("plan-info");
+  const infoMonto   = document.getElementById("info-monto");
+  const infoPlazo   = document.getElementById("info-plazo");
+  const infoTasa    = document.getElementById("info-tasa");
+
+  function fmt(n) {
+    return "Gs. " + n.toLocaleString("es-PY");
+  }
+
+  function actualizarPlan() {
+    const key  = planSelect.value;
+    const plan = CATALOGO[key];
+
+    if (!plan) {
+      planInfo.classList.remove("visible");
+      montoInput.disabled = true;
+      plazoInput.disabled = true;
+      montoInput.value = "";
+      plazoInput.value = "";
+      return;
+    }
+
+    // Mostrar info del plan
+    planInfo.classList.add("visible");
+    infoMonto.textContent = fmt(plan.monto_min) + " – " + fmt(plan.monto_max);
+    infoPlazo.textContent = plan.plazo_min + " – " + plan.plazo_max + " meses";
+    infoTasa.textContent  = TASAS[key] || "—";
+
+    // Actualizar restricciones de los inputs
+    montoInput.disabled = false;
+    montoInput.min      = plan.monto_min;
+    montoInput.max      = plan.monto_max;
+    montoInput.placeholder = fmt(plan.monto_min) + " – " + fmt(plan.monto_max);
+
+    plazoInput.disabled = false;
+    plazoInput.min      = plan.plazo_min;
+    plazoInput.max      = plan.plazo_max;
+    plazoInput.placeholder = plan.plazo_min + " – " + plan.plazo_max + " meses";
+  }
+
+  planSelect.addEventListener("change", actualizarPlan);
+
+  // Inicializar estado al cargar (por si hay valor preseleccionado)
+  actualizarPlan();
+</script>
 
 </body>
 </html>
