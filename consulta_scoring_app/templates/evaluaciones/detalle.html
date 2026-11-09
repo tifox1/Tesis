@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Evaluación #{{ evaluacion.pk }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Evaluación #{{ evaluacion.pk }}</h1>
+  <p class="muted">{{ evaluacion.fecha_hora|date:'d/m/Y H:i' }} — usuario {{ evaluacion.usuario.username }} — modelo {{ evaluacion.modelo_version }}</p>
+  {% if evaluacion.solicitante %}
+    <p><strong>Solicitante:</strong> <a href="{% url 'consulta_scoring_app:solicitante_detalle' evaluacion.solicitante.pk %}">{{ evaluacion.solicitante.nombres }} {{ evaluacion.solicitante.apellidos }} (CI {{ evaluacion.solicitante.cedula }})</a></p>
+  {% else %}<div class="warning">Evaluación histórica anterior a la incorporación de fichas. Sin solicitante vinculado.</div>{% endif %}
+  <div class="grid">
+    <div class="metric"><span>Score</span><strong>{{ evaluacion.score|floatformat:1 }}</strong></div>
+    <div class="metric"><span>PD estimada</span><strong>{{ evaluacion.pd_porcentaje|floatformat:2 }}%</strong></div>
+    <div class="metric"><span>Banda</span><strong>{{ evaluacion.banda }}</strong><small>{{ evaluacion.nivel_riesgo }}</small></div>
+    <div class="metric"><span>Cuota máxima</span><strong>Gs. {{ evaluacion.cuota_maxima_estimada_gs|floatformat:0|intcomma }}</strong></div>
+  </div>
+</div>
+<div class="card">
+  <h2>Ofertas simuladas del motor</h2>
+  {% if evaluacion.ofertas %}
+  <table><thead><tr><th>Producto</th><th>Monto preaprobado</th><th>Plazo</th></tr></thead><tbody>
+  {% for oferta in evaluacion.ofertas %}
+    <tr><td>{{ oferta.producto }}</td><td>Gs. {{ oferta.monto_preaprobado_gs|floatformat:0|intcomma }}</td><td>{{ oferta.plazo_meses }} meses</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<p>No se generaron ofertas para esta evaluación.</p>{% endif %}
+  <p class="muted">Las ofertas no son aprobaciones efectivas.</p>
+</div>
+<div class="card">
+  <h2>Decisión humana simulada</h2>
+  {% if decision %}
+    <p><strong>Estado:</strong> {{ decision.get_estado_display }}</p>
+    <p><strong>Producto:</strong> {{ decision.producto_codigo|default:'Ninguno' }}</p>
+    <p><strong>Motivo:</strong> {{ decision.motivo }}</p>
+    <p class="muted">Registrada por {{ decision.usuario.username }} el {{ decision.fecha_hora|date:'d/m/Y H:i' }}. No editable desde la aplicación.</p>
+  {% elif puede_decidir %}
+    <p>Todavía no existe una decisión del analista.</p>
+    <a class="btn" href="{% url 'consulta_scoring_app:registrar_decision' evaluacion.pk %}">Registrar decisión</a>
+  {% else %}<p>Sin decisión registrada.</p>{% endif %}
+</div>
+<div class="card">
+  <h2>Seguimiento del crédito ficticio</h2>
+  {% if seguimiento %}
+    <p><strong>Estado:</strong> {{ seguimiento.get_estado_display }} · <strong>Máxima mora:</strong> {{ seguimiento.max_dias_mora }} días</p>
+    <p><strong>Fecha prevista de cierre:</strong> {{ seguimiento.fecha_cierre_prevista|date:'d/m/Y' }}</p>
+    <a class="btn" href="{% url 'consulta_scoring_app:seguimiento_detalle' seguimiento.pk %}">Consultar seguimiento</a>
+  {% elif puede_crear_seguimiento %}
+    <p>La decisión aprobada permite registrar un seguimiento de crédito simulado.</p>
+    <a class="btn" href="{% url 'consulta_scoring_app:seguimiento_nuevo' evaluacion.pk %}">Crear seguimiento ficticio</a>
+  {% else %}
+    <p class="muted">Sin seguimiento. Solo las decisiones aprobadas tienen seguimiento crediticio.</p>
+  {% endif %}
+</div>
+{% if evaluacion.entradas.captura_financiera %}
+<div class="card">
+  <h2>Procedencia del DTI y de la utilización</h2>
+  <p><strong>Modalidad:</strong> {{ evaluacion.entradas.captura_financiera.modalidad }}</p>
+  <p><strong>Origen:</strong> {{ evaluacion.entradas.captura_financiera.origen }}</p>
+  {% if evaluacion.entradas.captura_financiera.desglose_gs %}
+    <table><tbody>
+      {% for campo, valor in evaluacion.entradas.captura_financiera.desglose_gs.items %}
+        <tr><th>{{ campo }}</th><td>Gs. {{ valor|intcomma }}</td></tr>
+      {% endfor %}
+      <tr><th>Total cuotas mensuales</th><td>Gs. {{ evaluacion.entradas.captura_financiera.total_cuotas_mensuales_gs|intcomma }}</td></tr>
+    </tbody></table>
+  {% endif %}
+  <p class="muted">Datos declarados al momento de la evaluación; no se actualizan con cambios posteriores.</p>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Variables originales de esta evaluación</h2>
+  <table><tbody>
+    {% for clave, valor in evaluacion.entradas.datos_ingresados.items %}<tr><th>{{ clave }}</th><td>{{ valor }}</td></tr>{% empty %}<tr><td>Sin variables estructuradas registradas.</td></tr>{% endfor %}
+  </tbody></table>
+  <a class="btn btn-secondary" href="{% url 'consulta_scoring_app:historial' %}">Volver al historial</a>
+</div>
+{% endblock %}

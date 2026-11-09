@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+    <div><h1>Usuarios del sistema</h1><p class="muted">Son usuarios internos; no representan clientes del modelo.</p></div>
+    <a class="btn" href="{% url 'consulta_scoring_app:usuario_alta' %}">Alta de usuario</a>
+  </div>
+  <table><thead><tr><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Activo</th><th>Asignar rol</th></tr></thead><tbody>
+    {% for u in usuarios %}<tr><td>{{ u.username }}</td><td>{{ u.get_full_name }}</td><td>{{ u.email|default:'—' }}</td><td>{% for g in u.groups.all %}{{ g.name }}{% empty %}{% if u.is_superuser %}SUPERUSUARIO{% else %}Sin rol{% endif %}{% endfor %}</td><td>{{ u.is_active|yesno:'Sí,No' }}</td><td>{% if u.pk != user.pk and not u.is_superuser %}<form action="{% url 'consulta_scoring_app:usuario_cambiar_rol' u.pk %}" method="post" style="display:flex;gap:6px">{% csrf_token %}<select name="rol" aria-label="Rol de {{ u.username }}"><option value="ANALISTA" {% if u.rol_actual == 'ANALISTA' %}selected{% endif %}>Analista</option><option value="ADMINISTRADOR" {% if u.rol_actual == 'ADMINISTRADOR' %}selected{% endif %}>Administrador</option><option value="AUDITOR" {% if u.rol_actual == 'AUDITOR' %}selected{% endif %}>Auditor</option></select><button type="submit">Guardar</button></form>{% else %}<span class="muted">No editable</span>{% endif %}</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% endblock %}

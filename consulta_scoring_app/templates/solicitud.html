@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Evaluación de scoring{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Nueva evaluación de scoring</h1>
+  <p><strong>Solicitante:</strong> {{ solicitante.nombres }} {{ solicitante.apellidos }} (CI {{ solicitante.cedula }}). <strong>Edad:</strong> {{ edad_solicitante }} años.</p>
+  <p>Elegí cómo cargar los indicadores financieros. Ambos procedimientos producen los mismos diez valores de entrada del modelo.</p>
+  <div class="warning"><strong>Alcance académico:</strong> los datos son declarados por el analista. No se consultan automáticamente burós, bancos ni verificadores externos.</div>
+</div>
+<form method="post" class="card" id="evaluacion-form">
+  {% csrf_token %}
+  {{ form.edad }}{{ form.edad.errors }}
+  {{ form.non_field_errors }}
+  <h2>1. Información económica</h2>
+  <div class="field">
+    {{ form.ingreso_mensual_bruto_gs.label_tag }}
+    {{ form.ingreso_mensual_bruto_gs }}
+    <span class="helptext">{{ form.ingreso_mensual_bruto_gs.help_text }}</span>
+    {{ form.ingreso_mensual_bruto_gs.errors }}
+  </div>
+  <h2>2. Modalidad de captura</h2>
+  <div class="field">
+    {{ form.modo_captura }}
+    {{ form.modo_captura.errors }}
+  </div>
+  <fieldset id="captura-automatica" class="card" style="box-shadow:none">
+    <legend><strong>Calcular DTI y utilización automáticamente</strong></legend>
+    <p class="muted">Las cuotas corresponden a <strong>pagos mensuales</strong>, no al saldo total de las deudas. Los saldos/límites corresponden únicamente a tarjetas y líneas revolventes.</p>
+    <div class="grid">
+      {% for campo in form %}
+        {% if campo.name == 'cuota_hipotecaria_gs' or campo.name == 'cuota_prestamos_personales_gs' or campo.name == 'pago_mensual_tarjetas_gs' or campo.name == 'saldo_lineas_utilizado_gs' or campo.name == 'limite_lineas_total_gs' %}
+          <div class="field">{{ campo.label_tag }}{{ campo }}{{ campo.errors }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="grid" aria-live="polite">
+      <div class="metric"><span>DTI calculado</span><strong id="dti-preview">—</strong><small>Pagos mensuales / ingreso bruto</small></div>
+      <div class="metric"><span>Utilización calculada</span><strong id="utilizacion-preview">—</strong><small>Saldo utilizado / límite total</small></div>
+    </div>
+    <p id="captura-aviso" class="helptext">Se guardará el desglose utilizado para obtener ambos indicadores.</p>
+  </fieldset>
+  <fieldset id="captura-directa" class="card" style="box-shadow:none" hidden>
+    <legend><strong>Ingresar indicadores obtenidos de otra fuente</strong></legend>
+    <p class="muted">Ingresá proporciones, no porcentajes enteros: 25 % = 0.25. Indicá cuál fue la fuente consultada o la planilla de cálculo utilizada.</p>
+    <div class="grid">
+      {% for campo in form %}
+        {% if campo.name == 'relacion_deuda_ingreso' or campo.name == 'utilizacion_lineas' or campo.name == 'fuente_indicadores' %}
+          <div class="field">{{ campo.label_tag }}{{ campo }}{% if campo.help_text %}<span class="helptext">{{ campo.help_text }}</span>{% endif %}{{ campo.errors }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </fieldset>
+  <h2>3. Antecedentes y composición crediticia</h2>
+  <div class="grid">
+    {% for campo in form %}
+      {% if campo.name == 'atraso_30_59' or campo.name == 'atraso_60_89' or campo.name == 'atraso_90_plus' or campo.name == 'cantidad_creditos_activos' or campo.name == 'creditos_inmobiliarios' or campo.name == 'dependientes' %}
+      <div class="field">{{ campo.label_tag }}{{ campo }}{% if campo.help_text %}<span class="helptext">{{ campo.help_text }}</span>{% endif %}{{ campo.errors }}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p class="muted">Los créditos inmobiliarios declarados deben estar incluidos en el total de créditos/líneas activas. Un valor 0 debe significar ausencia confirmada, no falta de información.</p>
+  <button type="submit">Calcular score y alternativas</button>
+  <a class="btn btn-secondary" href="{% url 'consulta_scoring_app:solicitante_detalle' solicitante.pk %}">Volver a la ficha</a>
+</form>
+<script>
+(function () {
+  'use strict';
+  const form = document.getElementById('evaluacion-form');
+  const auto = document.getElementById('captura-automatica');
+  const directo = document.getElementById('captura-directa');
+  const modos = form.querySelectorAll('input[name="modo_captura"]');
+  const asNumber = (name) => {
+    const el = form.elements.namedItem(name);
+    if (!el || el.value.trim() === '') return null;
+    const n = Number(el.value);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  };
+  function refrescarVista() {
+    const seleccionado = form.querySelector('input[name="modo_captura"]:checked');
+    const esAuto = !seleccionado || seleccionado.value === 'AUTOMATICO';
+    auto.hidden = !esAuto;
+    directo.hidden = esAuto;
+    auto.querySelectorAll('input').forEach(el => { el.disabled = !esAuto; });
+    directo.querySelectorAll('input').forEach(el => { el.disabled = esAuto; });
+  }
+  function refrescarIndicadores() {
+    const ingreso = asNumber('ingreso_mensual_bruto_gs');
+    const hipoteca = asNumber('cuota_hipotecaria_gs');
+    const prestamos = asNumber('cuota_prestamos_personales_gs');
+    const tarjetas = asNumber('pago_mensual_tarjetas_gs');
+    const saldo = asNumber('saldo_lineas_utilizado_gs');
+    const limite = asNumber('limite_lineas_total_gs');
+    const dti = ingreso > 0 && hipoteca !== null && prestamos !== null && tarjetas !== null
+      ? (hipoteca + prestamos + tarjetas) / ingreso : null;
+    const uso = saldo !== null && limite !== null && (limite > 0 || saldo === 0)
+      ? (limite > 0 ? saldo / limite : 0) : null;
+    document.getElementById('dti-preview').textContent = dti === null ? '—' : (dti * 100).toFixed(2) + ' %';
+    document.getElementById('utilizacion-preview').textContent = uso === null ? '—' : (uso * 100).toFixed(2) + ' %';
+    document.getElementById('captura-aviso').textContent = uso === null && saldo !== null && limite === 0 && saldo > 0
+      ? 'Hay saldo utilizado sin límite declarado; corregí los datos para continuar.'
+      : 'Vista previa orientativa: los indicadores definitivos se calculan y validan en el servidor.';
+  }
+  modos.forEach(el => el.addEventListener('change', refrescarVista));
+  ['ingreso_mensual_bruto_gs', 'cuota_hipotecaria_gs', 'cuota_prestamos_personales_gs',
+    'pago_mensual_tarjetas_gs', 'saldo_lineas_utilizado_gs', 'limite_lineas_total_gs']
+    .forEach(name => form.elements.namedItem(name)?.addEventListener('input', refrescarIndicadores));
+  refrescarVista();
+  refrescarIndicadores();
+})();
+</script>
+{% endblock %}

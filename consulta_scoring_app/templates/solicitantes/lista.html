@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Solicitantes{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Solicitantes</h1>
+  <p>Buscá por número de cédula para consultar una ficha, sus evaluaciones y decisiones. Para la tesis, utilizá exclusivamente identidades ficticias.</p>
+  <form method="get" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+    <div class="field" style="flex:1;margin:0;min-width:220px">
+      <label for="ci">Número de cédula</label>
+      <input id="ci" type="text" name="ci" value="{{ consulta }}" placeholder="Ej.: 0000000" inputmode="numeric">
+    </div>
+    <button type="submit">Buscar</button>
+    <a class="btn btn-secondary" href="{% url 'consulta_scoring_app:solicitantes_lista' %}">Ver lista</a>
+    <a class="btn" href="{% url 'consulta_scoring_app:solicitante_nuevo' %}">Registrar solicitante</a>
+  </form>
+</div>
+<div class="card">
+  <h2>Fichas disponibles</h2>
+  <table>
+    <thead><tr><th>Cédula</th><th>Nombre y apellido</th><th>Ciudad</th><th>Situación laboral</th><th></th></tr></thead>
+    <tbody>
+    {% for solicitante in solicitantes %}
+      <tr>
+        <td>{{ solicitante.cedula }}</td>
+        <td>{{ solicitante.nombres }} {{ solicitante.apellidos }}</td>
+        <td>{{ solicitante.ciudad }}</td>
+        <td>{{ solicitante.get_situacion_laboral_display }}</td>
+        <td><a href="{% url 'consulta_scoring_app:solicitante_detalle' solicitante.pk %}">Ver ficha</a></td>
+      </tr>
+    {% empty %}<tr><td colspan="5">No se encontraron solicitantes accesibles para este usuario.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

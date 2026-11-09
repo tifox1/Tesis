@@ -1,0 +1,12 @@
+{
+  "modelo_version": "credit_score_v1",
+  "dataset": "INDICAR_FUENTE_REAL_DEL_DATASET",
+  "particion": "INDICAR_TEST_HOLDOUT_O_VALIDACION",
+  "definicion_evento": "INDICAR_DEFINICION_DE_LA_VARIABLE_OBJETIVO",
+  "fecha_validacion": "2026-10-11",
+  "muestra_n": 0,
+  "auc_roc": null,
+  "gini": null,
+  "ks": null,
+  "brier": null
+}

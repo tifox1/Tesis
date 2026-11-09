@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Indicadores | Scoring{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Indicadores del sistema</h1>
+  <div class="warning"><strong>Prototipo académico:</strong> los registros operativos corresponden a solicitudes y decisiones simuladas, no a créditos bancarios desembolsados. Las métricas predictivas provienen únicamente de experimentos documentados.</div>
+  <p class="muted">Alcance de lectura: {% if vista_global %}<strong>todas las evaluaciones del prototipo</strong>{% else %}<strong>solo tus evaluaciones</strong>{% endif %}. No se incluyen expedientes fuera de tus permisos.</p>
+  <p><a href="#operaciones">Operaciones</a> · <a href="#validacion">Validación predictiva</a></p>
+</div>
+<section id="operaciones" class="card">
+  <h2>Actividad operativa</h2>
+  <div class="grid" style="margin-bottom:18px">
+    <div class="metric"><span>Evaluaciones registradas</span><strong>{{ operaciones.total }}</strong></div>
+    <div class="metric"><span>Decisiones registradas</span><strong>{{ operaciones.con_decision }}</strong></div>
+    <div class="metric"><span>Sin decisión registrada</span><strong>{{ operaciones.pendientes }}</strong></div>
+    <div class="metric"><span>Score promedio</span><strong>{% if operaciones.promedio_score is not None %}{{ operaciones.promedio_score|floatformat:1 }}{% else %}—{% endif %}</strong></div>
+  </div>
+  <div class="grid">
+    <div>
+      <h3>Distribución por banda</h3>
+      <table>
+      <thead><tr><th>Banda</th><th>Cantidad</th><th>Distribución</th></tr></thead>
+      <tbody>{% for item in operaciones.bandas %}<tr><td>{{ item.codigo }}</td><td>{{ item.cantidad }}</td><td>
+      <div style="background:#e2e8f0;width:100%;height:12px;border-radius:8px;overflow:hidden"><div style="background:#1d4ed8;width:{% if operaciones.total %}{% widthratio item.cantidad operaciones.total 100 %}{% else %}0{% endif %}%;height:100%"></div></div>
+      </td></tr>{% endfor %}</tbody></table>
+    </div>
+    <div>
+      <h3>Decisiones humanas simuladas</h3>
+      <table><thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
+      <tbody>{% for item in operaciones.decisiones %}<tr><td>{{ item.nombre }}</td><td>{{ item.cantidad }}</td></tr>{% endfor %}</tbody></table>
+      <p class="muted" style="font-size:.85rem">Las decisiones son registradas por analistas; no representan aprobaciones bancarias reales.</p>
+    </div>
+  </div>
+</section>
+<section id="validacion" class="card">
+  <h2>Desempeño del modelo predictivo</h2>
+  <p>Esta sección NO utiliza seguimientos ficticios como si fueran observaciones reales. Solo presenta métricas importadas desde una validación estadística reproducible.</p>
+  {% if reporte_error %}<div class="warning">{{ reporte_error }}. Revisá el archivo de métricas antes de presentarlo.</div>{% endif %}
+  {% if reporte %}
+    <div class="grid">
+      <div class="metric"><span>AUC-ROC</span><strong>{% if reporte.auc_roc is not None %}{{ reporte.auc_roc|floatformat:4 }}{% else %}—{% endif %}</strong></div>
+      <div class="metric"><span>Gini</span><strong>{% if reporte.gini is not None %}{{ reporte.gini|floatformat:4 }}{% else %}—{% endif %}</strong></div>
+      <div class="metric"><span>KS</span><strong>{% if reporte.ks is not None %}{{ reporte.ks|floatformat:4 }}{% else %}—{% endif %}</strong></div>
+      <div class="metric"><span>Brier</span><strong>{% if reporte.brier is not None %}{{ reporte.brier|floatformat:4 }}{% else %}—{% endif %}</strong></div>
+    </div>
+    <h3>Procedencia de los indicadores</h3>
+    <table><tbody>
+      <tr><th>Versión del modelo</th><td>{{ reporte.modelo_version }}</td></tr>
+      <tr><th>Conjunto de datos</th><td>{{ reporte.dataset }}</td></tr>
+      <tr><th>Partición de evaluación</th><td>{{ reporte.particion }}</td></tr>
+      <tr><th>Definición del evento</th><td>{{ reporte.definicion_evento }}</td></tr>
+      <tr><th>Tamaño de muestra</th><td>{{ reporte.muestra_n }}</td></tr>
+      <tr><th>Fecha de validación</th><td>{{ reporte.fecha_validacion }}</td></tr>
+    </tbody></table>
+    <p class="muted">Resultados del conjunto indicado, no evidencia de desempeño prospectivo en una cartera paraguaya.</p>
+  {% else %}
+    <div class="warning"><strong>Métricas pendientes de incorporar.</strong> Aún no se ha cargado un reporte validado. AUC, Gini y KS no se calculan a partir de créditos ficticios ni se generan automáticamente desde el historial.</div>
+    <p class="muted">Cuando estén disponibles los experimentos originales, exportá sus resultados verificables a <code>artifacts/model_validation_report.json</code> según la documentación de V2.6.</p>
+  {% endif %}
+</section>
+{% endblock %}

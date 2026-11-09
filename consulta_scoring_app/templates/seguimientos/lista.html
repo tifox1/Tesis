@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Seguimientos académicos{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Seguimiento crediticio</h1>
+  <div class="warning"><strong>Prototipo académico:</strong> los créditos, las decisiones y los estados de esta sección son simulados. No constituyen operaciones bancarias ni estadísticas reales de mora.</div>
+  <p>Consultá los seguimientos vinculados a evaluaciones y decisiones aprobadas. Cada expediente puede recuperarse por el número de cédula del solicitante ficticio.</p>
+  <form method="get" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+    <div class="field" style="flex:1;margin:0;min-width:170px">
+      <label for="ci">Cédula de identidad</label>
+      <input id="ci" type="text" name="ci" value="{{ consulta }}" placeholder="Número de CI ficticia">
+    </div>
+    <div class="field" style="flex:1;margin:0;min-width:170px">
+      <label for="estado">Estado</label>
+      <select id="estado" name="estado">
+        <option value="">Todos los estados</option>
+        {% for codigo, nombre in estados %}<option value="{{ codigo }}" {% if estado_actual == codigo %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit">Filtrar</button>
+    <a class="btn btn-secondary" href="{% url 'consulta_scoring_app:seguimientos_lista' %}">Limpiar</a>
+  </form>
+</div>
+<div class="card">
+  <h2>Créditos simulados con seguimiento</h2>
+  <table>
+    <thead><tr><th>Seguimiento</th><th>CI</th><th>Evaluación</th><th>Estado</th><th>Cierre previsto</th><th>Máx. mora</th><th></th></tr></thead>
+    <tbody>
+    {% for seg in seguimientos %}
+    <tr>
+      <td>#{{ seg.pk }}</td>
+      <td>{{ seg.decision.evaluacion.solicitante.cedula|default:'Sin ficha histórica' }}</td>
+      <td>#{{ seg.decision.evaluacion.pk }}</td>
+      <td>{{ seg.get_estado_display }}</td>
+      <td>{{ seg.fecha_cierre_prevista|date:'d/m/Y' }}</td>
+      <td>{{ seg.max_dias_mora }} días</td>
+      <td><a href="{% url 'consulta_scoring_app:seguimiento_detalle' seg.pk %}">Consultar</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="7">No hay seguimientos visibles con esos filtros.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

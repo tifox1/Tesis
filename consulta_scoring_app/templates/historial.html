@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Historial{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Historial de evaluaciones</h1>
+  <p class="muted">Los analistas consultan sus propias evaluaciones. Los administradores tienen una vista general. Las evaluaciones antiguas permanecen sin ficha asociada.</p>
+  <table>
+    <thead><tr><th>ID</th><th>Fecha</th><th>Solicitante</th><th>Usuario</th><th>Score</th><th>PD</th><th>Banda</th><th>Ofertas</th><th></th></tr></thead>
+    <tbody>
+      {% for e in evaluaciones %}
+      <tr>
+        <td>{{ e.id }}</td>
+        <td>{{ e.fecha_hora|date:'d/m/Y H:i' }}</td>
+        <td>{% if e.solicitante %}{{ e.solicitante.nombres }} {{ e.solicitante.apellidos }}{% else %}Sin ficha (histórico){% endif %}</td>
+        <td>{{ e.usuario.username }}</td>
+        <td>{{ e.score|floatformat:1 }}</td>
+        <td>{{ e.pd_porcentaje|floatformat:2 }}%</td>
+        <td>{{ e.banda }} — {{ e.nivel_riesgo }}</td>
+        <td>{{ e.ofertas|length }}</td>
+        <td><a href="{% url 'consulta_scoring_app:evaluacion_detalle' e.pk %}">Detalle</a></td>
+      </tr>
+      {% empty %}<tr><td colspan="9">Todavía no hay evaluaciones accesibles.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

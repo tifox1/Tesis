@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sistema de Scoring{% endblock %}</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, sans-serif; color:#172033; background:#f5f7fb; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    nav { background:#14213d; color:white; padding:14px 24px; display:flex; gap:18px; align-items:center; }
+    nav a { color:white; text-decoration:none; }
+    nav .spacer { flex:1; }
+    main { max-width:1050px; margin:32px auto; padding:0 18px; }
+    .card { background:white; border:1px solid #dfe5ef; border-radius:12px; padding:22px; margin-bottom:18px; box-shadow:0 3px 14px rgba(20,33,61,.05); }
+    h1,h2,h3 { margin-top:0; }
+    label { font-weight:650; display:block; margin-bottom:5px; }
+    input, select { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:7px; }
+    .field { margin-bottom:15px; }
+    .helptext { font-size:.82rem; color:#64748b; display:block; margin-top:4px; }
+    .errorlist { color:#b42318; margin:6px 0; }
+    button,.btn { background:#1d4ed8; border:0; color:white; padding:10px 16px; border-radius:7px; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn-secondary { background:#475569; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .metric { text-align:center; padding:20px; background:#f8fafc; border-radius:10px; }
+    .metric strong { display:block; font-size:2rem; color:#1d4ed8; }
+    .warning { background:#fff7ed; border:1px solid #fdba74; padding:12px; border-radius:8px; margin:8px 0; }
+    .ok { background:#ecfdf3; border:1px solid #86efac; padding:12px; border-radius:8px; }
+    table { width:100%; border-collapse:collapse; font-size:.9rem; }
+    th,td { text-align:left; padding:10px; border-bottom:1px solid #e2e8f0; }
+    .muted { color:#64748b; }
+    .products { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+    .product-card { border:1px solid #cbd5e1; border-radius:10px; padding:16px; background:#f8fafc; }
+    .product-card p { margin:8px 0; }
+    @media(max-width:700px){ .grid{grid-template-columns:1fr;} nav{flex-wrap:wrap;} }
+  </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<nav>
+  <strong>Credit Scoring</strong>
+  {% if ui_puede_consultar %}<a href="{% url 'consulta_scoring_app:solicitud' %}">Solicitantes</a>{% endif %}
+  {% if ui_puede_evaluar %}<a href="{% url 'consulta_scoring_app:solicitante_nuevo' %}">Nueva ficha</a>{% endif %}
+  {% if ui_puede_consultar %}<a href="{% url 'consulta_scoring_app:historial' %}">Historial</a>{% endif %}
+  {% if ui_puede_consultar %}<a href="{% url 'consulta_scoring_app:seguimientos_lista' %}">Seguimientos</a>{% endif %}
+  {% if ui_puede_consultar %}<a href="{% url 'consulta_scoring_app:indicadores' %}">Indicadores</a>{% endif %}
+  {% if ui_admin %}<a href="{% url 'consulta_scoring_app:usuarios_lista' %}">Usuarios</a>{% endif %}
+  {% if ui_auditoria %}<a href="{% url 'consulta_scoring_app:auditoria_lista' %}">Auditoría</a>{% endif %}
+  <span class="spacer"></span>
+  <span>{{ user.get_full_name|default:user.username }}</span>
+  <form action="{% url 'logout' %}" method="post" style="margin:0">{% csrf_token %}<button class="btn-secondary" type="submit">Salir</button></form>
+</nav>
+{% endif %}
+<main>
+  {% for message in messages %}<div class="{% if message.tags == 'error' %}warning{% else %}ok{% endif %}">{{ message }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

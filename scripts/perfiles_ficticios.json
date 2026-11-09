@@ -1,0 +1,82 @@
+[
+  {
+    "nombre": "01 - Riesgo muy bajo",
+    "descripcion": "Solicitante con pocos compromisos y sin atrasos.",
+    "datos": {
+      "edad": 42,
+      "ingreso_mensual_bruto_gs": 13500000,
+      "relacion_deuda_ingreso": 0.12,
+      "utilizacion_lineas": 0.04,
+      "atraso_30_59": 0,
+      "atraso_60_89": 0,
+      "atraso_90_plus": 0,
+      "cantidad_creditos_activos": 8,
+      "creditos_inmobiliarios": 1,
+      "dependientes": 0
+    }
+  },
+  {
+    "nombre": "02 - Riesgo bajo/intermedio",
+    "descripcion": "Sin atrasos, pero con carga financiera relativamente alta.",
+    "datos": {
+      "edad": 34,
+      "ingreso_mensual_bruto_gs": 6000000,
+      "relacion_deuda_ingreso": 0.6,
+      "utilizacion_lineas": 0.2,
+      "atraso_30_59": 0,
+      "atraso_60_89": 0,
+      "atraso_90_plus": 0,
+      "cantidad_creditos_activos": 3,
+      "creditos_inmobiliarios": 1,
+      "dependientes": 0
+    }
+  },
+  {
+    "nombre": "03 - Riesgo intermedio",
+    "descripcion": "Carga financiera moderada, utilización elevada y un atraso previo.",
+    "datos": {
+      "edad": 29,
+      "ingreso_mensual_bruto_gs": 4875000,
+      "relacion_deuda_ingreso": 0.37,
+      "utilizacion_lineas": 0.72,
+      "atraso_30_59": 1,
+      "atraso_60_89": 0,
+      "atraso_90_plus": 0,
+      "cantidad_creditos_activos": 3,
+      "creditos_inmobiliarios": 1,
+      "dependientes": 0
+    }
+  },
+  {
+    "nombre": "04 - Riesgo alto",
+    "descripcion": "Elevada utilización crediticia y múltiples atrasos.",
+    "datos": {
+      "edad": 33,
+      "ingreso_mensual_bruto_gs": 5250000,
+      "relacion_deuda_ingreso": 0.58,
+      "utilizacion_lineas": 0.95,
+      "atraso_30_59": 2,
+      "atraso_60_89": 1,
+      "atraso_90_plus": 0,
+      "cantidad_creditos_activos": 6,
+      "creditos_inmobiliarios": 1,
+      "dependientes": 0
+    }
+  },
+  {
+    "nombre": "05 - Riesgo muy alto",
+    "descripcion": "Varios atrasos, incluyendo de 90 días o más, y alta carga financiera.",
+    "datos": {
+      "edad": 26,
+      "ingreso_mensual_bruto_gs": 3750000,
+      "relacion_deuda_ingreso": 0.82,
+      "utilizacion_lineas": 1.15,
+      "atraso_30_59": 3,
+      "atraso_60_89": 2,
+      "atraso_90_plus": 2,
+      "cantidad_creditos_activos": 3,
+      "creditos_inmobiliarios": 1,
+      "dependientes": 0
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Registrar decisión{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Decisión de evaluación #{{ evaluacion.pk }}</h1>
+  <p>Score {{ evaluacion.score|floatformat:1 }} — Banda {{ evaluacion.banda }} — {{ evaluacion.nivel_riesgo }}</p>
+  <div class="warning">Decisión simulada de una tesis. No concede un préstamo ni desembolsa dinero. Una decisión aprobada debe elegir una oferta realmente generada por el motor.</div>
+</div>
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+  <button type="submit">Registrar decisión</button>
+  <a class="btn btn-secondary" href="{% url 'consulta_scoring_app:evaluacion_detalle' evaluacion.pk %}">Cancelar</a>
+</form>
+{% endblock %}

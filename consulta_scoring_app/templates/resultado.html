@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Resultado del scoring{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Resultado de la evaluación #{{ evaluacion.pk }}</h1>
+  <p><strong>Solicitante:</strong> {{ solicitante.nombres }} {{ solicitante.apellidos }} — CI {{ solicitante.cedula }}.</p>
+  <div class="grid">
+    <div class="metric"><span>Score crediticio</span><strong>{{ score|floatformat:1 }}</strong><small>Escala 300–850</small></div>
+    <div class="metric"><span>PD estimada</span><strong>{{ pd_porcentaje|floatformat:2 }}%</strong><small>Probabilidad estimada del evento objetivo</small></div>
+    <div class="metric"><span>Banda</span><strong>{{ banda }}</strong><small>{{ nivel_riesgo }}</small></div>
+    <div class="metric"><span>Cuota nueva máxima estimada</span><strong>Gs. {{ capacidad.cuota_nueva_maxima_gs|floatformat:0|intcomma }}</strong><small>Política simulada: carga total máxima {{ carga_financiera_maxima_pct|floatformat:0 }}%</small></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Alternativas de crédito</h2>
+  {% if ofertas %}
+    <div class="products">
+      {% for oferta in ofertas %}
+      <div class="product-card">
+        <h3>{{ oferta.producto }}</h3>
+        <p><strong>Monto preaprobado:</strong> Gs. {{ oferta.monto_preaprobado_gs|floatformat:0|intcomma }}</p>
+        <p><strong>Plazo:</strong> {{ oferta.plazo_meses }} meses</p>
+        <p><strong>Tasa efectiva anual simulada:</strong> {{ oferta.tasa_anual_pct|floatformat:2 }}%</p>
+        <p><strong>Cuota estimada:</strong> Gs. {{ oferta.cuota_estimada_gs|floatformat:0|intcomma }}</p>
+        <p><strong>Total estimado de cuotas:</strong> Gs. {{ oferta.total_estimado_cuotas_gs|floatformat:0|intcomma }}</p>
+        <p><strong>Edad al vencimiento:</strong> {{ oferta.edad_al_vencimiento|floatformat:1 }} años</p>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="muted">Los montos son preaprobaciones del prototipo y funcionan como apoyo al analista; no constituyen una aprobación contractual.</p>
+  {% else %}
+    <div class="warning"><strong>Sin producto disponible:</strong> {{ motivo_sin_oferta }}</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Capacidad de pago estimada</h2>
+  <table>
+    <tbody>
+      <tr><th>Ingreso bruto</th><td>Gs. {{ capacidad.ingreso_gs|floatformat:0|intcomma }}</td></tr>
+      <tr><th>DTI utilizado</th><td>{{ capacidad.dti|floatformat:4 }}</td></tr>
+      <tr><th>Carga financiera existente estimada</th><td>Gs. {{ capacidad.carga_existente_estimada_gs|floatformat:0|intcomma }}</td></tr>
+      <tr><th>Carga máxima permitida por el prototipo</th><td>Gs. {{ capacidad.carga_maxima_gs|floatformat:0|intcomma }}</td></tr>
+      <tr><th>Cuota nueva máxima estimada</th><td>Gs. {{ capacidad.cuota_nueva_maxima_gs|floatformat:0|intcomma }}</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">El 40% es una política simulada del prototipo, no una exigencia general del BCP. El DTI se utiliza como aproximación de la carga financiera existente.</p>
+</div>
+
+<div class="card">
+  <h2>Controles del prototipo</h2>
+  <p><strong>Edad máxima al vencimiento:</strong> {{ edad_maxima_vencimiento }} años.</p>
+  <p><strong>Referencia de tasa usuraria en moneda nacional:</strong> {{ tasa_usuraria_pct|floatformat:2 }}% (BCP, {{ tasa_usuraria_periodo }}). Las tasas de los productos simulados están por debajo de esta referencia.</p>
+</div>
+
+<div class="card">
+  <h2>Control de entrada del modelo</h2>
+  {% if advertencias %}
+    {% for advertencia in advertencias %}<div class="warning">{{ advertencia }}</div>{% endfor %}
+  {% else %}
+    <div class="ok">Las variables enviadas al modelo se encuentran dentro del rango P01–P99 de referencia del entrenamiento.</div>
+  {% endif %}
+  <p class="muted">Una advertencia estadística no equivale automáticamente a rechazo; indica que el analista debe verificar el dato.</p>
+</div>
+
+<div class="card">
+  <h2>Origen de los indicadores financieros</h2>
+  <p><strong>Modalidad:</strong> {{ captura_financiera.modalidad }}</p>
+  <p><strong>Origen declarado:</strong> {{ captura_financiera.origen }}</p>
+  {% if captura_financiera.desglose_gs %}
+    <table><tbody>
+      {% for campo, valor in captura_financiera.desglose_gs.items %}
+        <tr><th>{{ campo }}</th><td>Gs. {{ valor|intcomma }}</td></tr>
+      {% endfor %}
+      <tr><th>Total cuotas mensuales</th><td>Gs. {{ captura_financiera.total_cuotas_mensuales_gs|intcomma }}</td></tr>
+    </tbody></table>
+  {% endif %}
+  <p class="muted">La procedencia declarada no implica verificación automática de los datos por el sistema.</p>
+</div>
+<div class="card">
+  <h2>Entradas comprobadas por el analista</h2>
+  <table><tbody>{% for nombre, valor in datos.items %}<tr><th>{{ nombre }}</th><td>{{ valor|default_if_none:'Faltante' }}</td></tr>{% endfor %}</tbody></table>
+  <p class="muted">Ingreso enviado internamente al modelo: {{ ingreso_modelo|floatformat:2 }} unidades de referencia (tipo de cambio fijo del prototipo: Gs. {{ tipo_cambio_referencia_gs|floatformat:0|intcomma }} por unidad).</p>
+</div>
+<a class="btn" href="{% url 'consulta_scoring_app:evaluacion_detalle' evaluacion.pk %}">Consultar registro y decisión</a>
+<a class="btn btn-secondary" href="{% url 'consulta_scoring_app:evaluar_solicitante' solicitante.pk %}">Nueva evaluación de este solicitante</a>
+{% endblock %}
