@@ -4,8 +4,6 @@
 <div class="card">
   <h1>Nueva evaluación de scoring</h1>
   <p><strong>Solicitante:</strong> {{ solicitante.nombres }} {{ solicitante.apellidos }} (CI {{ solicitante.cedula }}). <strong>Edad:</strong> {{ edad_solicitante }} años.</p>
-  <p>Elegí cómo cargar los indicadores financieros. Ambos procedimientos producen los mismos diez valores de entrada del modelo.</p>
-  <div class="warning"><strong>Alcance académico:</strong> los datos son declarados por el analista. No se consultan automáticamente burós, bancos ni verificadores externos.</div>
 </div>
 <form method="post" class="card" id="evaluacion-form">
   {% csrf_token %}
@@ -37,7 +35,7 @@
       <div class="metric"><span>DTI calculado</span><strong id="dti-preview">—</strong><small>Pagos mensuales / ingreso bruto</small></div>
       <div class="metric"><span>Utilización calculada</span><strong id="utilizacion-preview">—</strong><small>Saldo utilizado / límite total</small></div>
     </div>
-    <p id="captura-aviso" class="helptext">Se guardará el desglose utilizado para obtener ambos indicadores.</p>
+    <p id="captura-aviso" class="helptext" aria-live="polite"></p>
   </fieldset>
   <fieldset id="captura-directa" class="card" style="box-shadow:none" hidden>
     <legend><strong>Ingresar indicadores obtenidos de otra fuente</strong></legend>
@@ -98,7 +96,7 @@
     document.getElementById('utilizacion-preview').textContent = uso === null ? '—' : (uso * 100).toFixed(2) + ' %';
     document.getElementById('captura-aviso').textContent = uso === null && saldo !== null && limite === 0 && saldo > 0
       ? 'Hay saldo utilizado sin límite declarado; corregí los datos para continuar.'
-      : 'Vista previa orientativa: los indicadores definitivos se calculan y validan en el servidor.';
+      : '';
   }
   modos.forEach(el => el.addEventListener('change', refrescarVista));
   ['ingreso_mensual_bruto_gs', 'cuota_hipotecaria_gs', 'cuota_prestamos_personales_gs',

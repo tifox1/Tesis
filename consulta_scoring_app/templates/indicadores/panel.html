@@ -1,41 +1,201 @@
 {% extends 'base.html' %}
 {% block title %}Indicadores | Scoring{% endblock %}
 {% block content %}
+<style>
+  .indicadores-nav { display:flex; flex-wrap:wrap; gap:14px; }
+  .indicadores-nav a { color:#1d4ed8; font-weight:600; text-decoration:none; }
+  .indicadores-nav a:hover { text-decoration:underline; }
+  .indicadores-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+  .indicadores-chart { border:1px solid #dfe5ef; border-radius:12px; padding:18px; min-width:0; }
+  .indicadores-chart h3 { margin:0 0 14px; font-size:1.05rem; }
+  .indicadores-rows { display:grid; gap:12px; }
+  .indicadores-row { display:grid; grid-template-columns:minmax(100px,1.1fr) minmax(100px,2fr) minmax(65px,.7fr); gap:10px; align-items:center; }
+  .indicadores-label { font-size:.85rem; overflow-wrap:anywhere; }
+  .indicadores-value { font-size:.86rem; text-align:right; font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap; }
+  .indicadores-track { height:15px; background:#edf2f9; border-radius:5px; overflow:hidden; }
+  .indicadores-fill { display:block; height:100%; background:#2861a1; border-radius:5px; }
+  .indicadores-fill--secondary { background:#168b9a; }
+  .indicadores-fill--accent { background:#4b82c2; }
+  .indicadores-note { font-size:.8rem; color:#53647b; margin:14px 0 0; }
+  .indicadores-empty { margin:12px 0 0; font-size:.9rem; color:#64748b; }
+  .indicadores-summary { margin-top:14px; }
+  .indicadores-summary strong { font-variant-numeric:tabular-nums; }
+  @media(max-width:760px) {
+    .indicadores-grid { grid-template-columns:1fr; }
+    .indicadores-row { grid-template-columns:minmax(85px,1fr) minmax(90px,1.7fr) minmax(52px,.6fr); gap:6px; }
+    .indicadores-chart { padding:14px; }
+  }
+</style>
+
 <div class="card">
   <h1>Indicadores del sistema</h1>
-  <div class="warning"><strong>Prototipo académico:</strong> los registros operativos corresponden a solicitudes y decisiones simuladas, no a créditos bancarios desembolsados. Las métricas predictivas provienen únicamente de experimentos documentados.</div>
-  <p class="muted">Alcance de lectura: {% if vista_global %}<strong>todas las evaluaciones del prototipo</strong>{% else %}<strong>solo tus evaluaciones</strong>{% endif %}. No se incluyen expedientes fuera de tus permisos.</p>
-  <p><a href="#operaciones">Operaciones</a> · <a href="#validacion">Validación predictiva</a></p>
+  <nav class="indicadores-nav" aria-label="Secciones de indicadores" style="background:transparent;padding:0;color:inherit">
+    <a href="#riesgo">Riesgo</a>
+    <a href="#personas">Perfil de solicitantes</a>
+    <a href="#operaciones">Actividad</a>
+    <a href="#validacion">Validación</a>
+  </nav>
 </div>
-<section id="operaciones" class="card">
-  <h2>Actividad operativa</h2>
-  <div class="grid" style="margin-bottom:18px">
+
+<div class="card">
+  <div class="grid">
     <div class="metric"><span>Evaluaciones registradas</span><strong>{{ operaciones.total }}</strong></div>
     <div class="metric"><span>Decisiones registradas</span><strong>{{ operaciones.con_decision }}</strong></div>
-    <div class="metric"><span>Sin decisión registrada</span><strong>{{ operaciones.pendientes }}</strong></div>
     <div class="metric"><span>Score promedio</span><strong>{% if operaciones.promedio_score is not None %}{{ operaciones.promedio_score|floatformat:1 }}{% else %}—{% endif %}</strong></div>
+    <div class="metric"><span>PD promedio</span><strong>{% if operaciones.promedio_pd_pct is not None %}{{ operaciones.promedio_pd_pct|floatformat:"2u" }}%{% else %}—{% endif %}</strong></div>
   </div>
-  <div class="grid">
-    <div>
-      <h3>Distribución por banda</h3>
-      <table>
-      <thead><tr><th>Banda</th><th>Cantidad</th><th>Distribución</th></tr></thead>
-      <tbody>{% for item in operaciones.bandas %}<tr><td>{{ item.codigo }}</td><td>{{ item.cantidad }}</td><td>
-      <div style="background:#e2e8f0;width:100%;height:12px;border-radius:8px;overflow:hidden"><div style="background:#1d4ed8;width:{% if operaciones.total %}{% widthratio item.cantidad operaciones.total 100 %}{% else %}0{% endif %}%;height:100%"></div></div>
-      </td></tr>{% endfor %}</tbody></table>
+</div>
+
+<section id="riesgo" class="card">
+  <h2>Distribución de riesgo y scoring</h2>
+  <div class="indicadores-grid">
+    <div class="indicadores-chart">
+      <h3>Evaluaciones por banda</h3>
+      {% if operaciones.total %}
+      <div class="indicadores-rows">
+        {% for item in operaciones.bandas %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">Banda {{ item.codigo }}</span>
+          <div class="indicadores-track" role="img" aria-label="Banda {{ item.codigo }}: {{ item.cantidad }} evaluaciones"><span class="indicadores-fill" style="width:{% widthratio item.cantidad operaciones.total 100 %}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="indicadores-empty">Sin evaluaciones.</p>{% endif %}
     </div>
-    <div>
-      <h3>Decisiones humanas simuladas</h3>
-      <table><thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
-      <tbody>{% for item in operaciones.decisiones %}<tr><td>{{ item.nombre }}</td><td>{{ item.cantidad }}</td></tr>{% endfor %}</tbody></table>
-      <p class="muted" style="font-size:.85rem">Las decisiones son registradas por analistas; no representan aprobaciones bancarias reales.</p>
+    <div class="indicadores-chart">
+      <h3>Score por intervalos</h3>
+      {% if operaciones.total %}
+      <div class="indicadores-rows">
+        {% for item in graficos.rangos_score %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }}</span>
+          <div class="indicadores-track" role="img" aria-label="Score {{ item.etiqueta }}: {{ item.cantidad }} evaluaciones"><span class="indicadores-fill indicadores-fill--secondary" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="indicadores-note">Los intervalos cuentan evaluaciones, no clientes únicos.</p>
+      {% else %}<p class="indicadores-empty">Sin evaluaciones.</p>{% endif %}
     </div>
   </div>
 </section>
+
+<section id="personas" class="card">
+  <h2>Perfil de los solicitantes evaluados</h2>
+  <p class="indicadores-note" style="margin:0 0 16px">{{ graficos.personas }} personas con ficha. Una por solicitante, según su evaluación visible más reciente.</p>
+  {% if graficos.personas %}
+  <div class="indicadores-grid">
+    <div class="indicadores-chart">
+      <h3>Personas por rango de edad</h3>
+      <div class="indicadores-rows">
+        {% for item in graficos.edades %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }} años</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }} años: {{ item.cantidad }} personas"><span class="indicadores-fill" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="indicadores-note">Edad al momento de la evaluación.</p>
+    </div>
+    <div class="indicadores-chart">
+      <h3>Score promedio por edad</h3>
+      {% if graficos.score_por_edad %}
+      <div class="indicadores-rows">
+        {% for item in graficos.score_por_edad %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }} (n={{ item.cantidad }})</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }} años: score promedio {{ item.promedio|floatformat:1 }} en {{ item.cantidad }} personas"><span class="indicadores-fill indicadores-fill--accent" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.promedio|floatformat:1 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="indicadores-note">Escala 300–850; n indica cuántas personas hay en cada grupo. No implica causalidad.</p>
+      {% else %}<p class="indicadores-empty">Sin edades válidas para comparar.</p>{% endif %}
+    </div>
+    <div class="indicadores-chart">
+      <h3>Situación laboral</h3>
+      <div class="indicadores-rows">
+        {% for item in graficos.situaciones %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }}</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }}: {{ item.cantidad }} personas"><span class="indicadores-fill indicadores-fill--secondary" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="indicadores-chart">
+      <h3>Ciudad de residencia</h3>
+      <div class="indicadores-rows">
+        {% for item in graficos.ciudades %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }}</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }}: {{ item.cantidad }} personas"><span class="indicadores-fill indicadores-fill--accent" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="indicadores-note">La ciudad y la situación laboral describen los perfiles, pero no intervienen en el cálculo del score.</p>
+    </div>
+  </div>
+  {% else %}<p class="indicadores-empty">Sin solicitantes evaluados con ficha vinculada.</p>{% endif %}
+  {% if graficos.sin_ficha %}<p class="indicadores-note">{{ graficos.sin_ficha }} evaluaciones históricas sin ficha se excluyen del perfil de solicitantes.</p>{% endif %}
+</section>
+
+<section id="operaciones" class="card">
+  <h2>Actividad y decisiones</h2>
+  <div class="indicadores-grid">
+    <div class="indicadores-chart">
+      <h3>Evaluaciones por mes</h3>
+      {% if operaciones.total %}
+      <div class="indicadores-rows">
+        {% for item in graficos.evolucion %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }}</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }}: {{ item.cantidad }} evaluaciones"><span class="indicadores-fill" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="indicadores-note">Últimos 12 meses calendario.</p>
+      {% else %}<p class="indicadores-empty">Sin evaluaciones.</p>{% endif %}
+    </div>
+    <div class="indicadores-chart">
+      <h3>Decisiones registradas</h3>
+      {% if operaciones.total %}
+      <div class="indicadores-rows">
+        {% for item in operaciones.decisiones %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{% if item.codigo == 'PENDIENTE' %}Pendiente{% elif item.codigo == 'APROBADA' %}Aprobada{% elif item.codigo == 'CONDICIONAL' %}Condicional{% elif item.codigo == 'RECHAZADA' %}Rechazada{% else %}{{ item.nombre }}{% endif %}</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.nombre }}: {{ item.cantidad }} evaluaciones"><span class="indicadores-fill" style="width:{% widthratio item.cantidad operaciones.total 100 %}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="indicadores-empty">Sin evaluaciones.</p>{% endif %}
+    </div>
+    <div class="indicadores-chart">
+      <h3>Cantidad de ofertas por evaluación</h3>
+      {% if operaciones.total %}
+      <div class="indicadores-rows">
+        {% for item in graficos.ofertas %}
+        <div class="indicadores-row">
+          <span class="indicadores-label">{{ item.etiqueta }} ofertas</span>
+          <div class="indicadores-track" role="img" aria-label="{{ item.etiqueta }} ofertas: {{ item.cantidad }} evaluaciones"><span class="indicadores-fill indicadores-fill--accent" style="width:{{ item.ancho|floatformat:"2u" }}%"></span></div>
+          <span class="indicadores-value">{{ item.cantidad }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="indicadores-empty">Sin evaluaciones.</p>{% endif %}
+    </div>
+  </div>
+</section>
+
 <section id="validacion" class="card">
-  <h2>Desempeño del modelo predictivo</h2>
-  <p>Esta sección NO utiliza seguimientos ficticios como si fueran observaciones reales. Solo presenta métricas importadas desde una validación estadística reproducible.</p>
-  {% if reporte_error %}<div class="warning">{{ reporte_error }}. Revisá el archivo de métricas antes de presentarlo.</div>{% endif %}
+  <h2>Validación predictiva</h2>
+  {% if reporte_error %}<div class="warning">{{ reporte_error }}</div>{% endif %}
   {% if reporte %}
     <div class="grid">
       <div class="metric"><span>AUC-ROC</span><strong>{% if reporte.auc_roc is not None %}{{ reporte.auc_roc|floatformat:4 }}{% else %}—{% endif %}</strong></div>
@@ -43,19 +203,18 @@
       <div class="metric"><span>KS</span><strong>{% if reporte.ks is not None %}{{ reporte.ks|floatformat:4 }}{% else %}—{% endif %}</strong></div>
       <div class="metric"><span>Brier</span><strong>{% if reporte.brier is not None %}{{ reporte.brier|floatformat:4 }}{% else %}—{% endif %}</strong></div>
     </div>
-    <h3>Procedencia de los indicadores</h3>
+    <h3>Procedencia de la validación</h3>
     <table><tbody>
-      <tr><th>Versión del modelo</th><td>{{ reporte.modelo_version }}</td></tr>
+      <tr><th>Modelo</th><td>{{ reporte.modelo_version }}</td></tr>
       <tr><th>Conjunto de datos</th><td>{{ reporte.dataset }}</td></tr>
       <tr><th>Partición de evaluación</th><td>{{ reporte.particion }}</td></tr>
-      <tr><th>Definición del evento</th><td>{{ reporte.definicion_evento }}</td></tr>
-      <tr><th>Tamaño de muestra</th><td>{{ reporte.muestra_n }}</td></tr>
-      <tr><th>Fecha de validación</th><td>{{ reporte.fecha_validacion }}</td></tr>
+      <tr><th>Evento evaluado</th><td>{{ reporte.definicion_evento }}</td></tr>
+      <tr><th>Muestra</th><td>{{ reporte.muestra_n }}</td></tr>
+      <tr><th>Fecha</th><td>{{ reporte.fecha_validacion }}</td></tr>
     </tbody></table>
-    <p class="muted">Resultados del conjunto indicado, no evidencia de desempeño prospectivo en una cartera paraguaya.</p>
+    <p class="indicadores-note">Estas métricas corresponden al conjunto de validación indicado, no a las evaluaciones operativas del panel.</p>
   {% else %}
-    <div class="warning"><strong>Métricas pendientes de incorporar.</strong> Aún no se ha cargado un reporte validado. AUC, Gini y KS no se calculan a partir de créditos ficticios ni se generan automáticamente desde el historial.</div>
-    <p class="muted">Cuando estén disponibles los experimentos originales, exportá sus resultados verificables a <code>artifacts/model_validation_report.json</code> según la documentación de V2.6.</p>
+    <p class="indicadores-empty">No hay un reporte de validación cargado.</p>
   {% endif %}
 </section>
 {% endblock %}

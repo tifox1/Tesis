@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}{% if modo == 'crear' %}Registrar{% else %}Actualizar{% endif %} seguimiento académico{% endblock %}
+{% block title %}{% if modo == 'crear' %}Registrar{% else %}Actualizar{% endif %} seguimiento{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>{% if modo == 'crear' %}Registrar{% else %}Actualizar{% endif %} seguimiento del crédito ficticio</h1>
+  <h1>{% if modo == 'crear' %}Registrar{% else %}Actualizar{% endif %} seguimiento</h1>
   <p><strong>Evaluación:</strong> #{{ evaluacion.pk }} · <strong>Score original:</strong> {{ evaluacion.score|floatformat:1 }} · <strong>Decisión:</strong> {{ decision.get_estado_display }}</p>
   {% if evaluacion.solicitante %}<p><strong>Solicitante:</strong> {{ evaluacion.solicitante.nombres }} {{ evaluacion.solicitante.apellidos }} — CI {{ evaluacion.solicitante.cedula }}</p>{% endif %}
-  <div class="warning">Todos los datos de seguimiento son <strong>ficticios</strong>. La fecha prevista de cierre puede estar en 2029; la fecha de observación no puede ser futura. Esta función no gestiona pagos, cuotas ni cobranzas reales.</div>
+  <p class="muted">La fecha de observación no puede ser futura.</p>
   {% if modo == 'actualizar' %}<p class="muted">Las fechas de otorgamiento y cierre previstas ya no se pueden modificar desde esta pantalla. El máximo histórico de mora no puede disminuir.</p>{% endif %}
 </div>
 <form method="post" class="card">

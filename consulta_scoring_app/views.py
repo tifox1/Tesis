@@ -26,7 +26,9 @@ from .permissions import (
     puede_consultar, puede_decidir, puede_evaluar, puede_ver_auditoria, puede_consultar_todos,
 )
 from .services.auditoria_service import registrar_evento
-from .services.indicadores_service import obtener_indicadores_operativos, leer_reporte_validacion
+from .services.indicadores_service import (
+    obtener_indicadores_operativos, obtener_graficos_descriptivos, leer_reporte_validacion,
+)
 
 
 def exigir_permiso(request, permitido, recurso='', objeto_id=None):
@@ -453,13 +455,15 @@ def indicadores(request):
     los seguimientos ficticios NO alimentan la evaluación del modelo.
     """
     exigir_permiso(request, puede_consultar(request.user), recurso='indicadores')
-    operaciones = obtener_indicadores_operativos(evaluaciones_visibles(request.user))
+    visibles = evaluaciones_visibles(request.user)
+    operaciones = obtener_indicadores_operativos(visibles)
+    graficos = obtener_graficos_descriptivos(visibles)
     reporte, reporte_error = leer_reporte_validacion()
     registrar_evento(
         request.user, EventoAuditoria.Accion.INDICADORES_CONSULTADOS, recurso='indicadores',
     )
     return render(request, 'indicadores/panel.html', {
-        'operaciones': operaciones,
+        'operaciones': operaciones, 'graficos': graficos,
         'reporte': reporte, 'reporte_error': reporte_error,
         'vista_global': request.user.is_superuser or puede_consultar_todos(request.user),
     })

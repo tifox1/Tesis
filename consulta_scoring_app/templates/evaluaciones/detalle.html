@@ -16,7 +16,7 @@
   </div>
 </div>
 <div class="card">
-  <h2>Ofertas simuladas del motor</h2>
+  <h2>Ofertas generadas</h2>
   {% if evaluacion.ofertas %}
   <table><thead><tr><th>Producto</th><th>Monto preaprobado</th><th>Plazo</th></tr></thead><tbody>
   {% for oferta in evaluacion.ofertas %}
@@ -24,10 +24,9 @@
   {% endfor %}
   </tbody></table>
   {% else %}<p>No se generaron ofertas para esta evaluación.</p>{% endif %}
-  <p class="muted">Las ofertas no son aprobaciones efectivas.</p>
 </div>
 <div class="card">
-  <h2>Decisión humana simulada</h2>
+  <h2>Decisión registrada</h2>
   {% if decision %}
     <p><strong>Estado:</strong> {{ decision.get_estado_display }}</p>
     <p><strong>Producto:</strong> {{ decision.producto_codigo|default:'Ninguno' }}</p>
@@ -39,14 +38,13 @@
   {% else %}<p>Sin decisión registrada.</p>{% endif %}
 </div>
 <div class="card">
-  <h2>Seguimiento del crédito ficticio</h2>
+  <h2>Seguimiento</h2>
   {% if seguimiento %}
     <p><strong>Estado:</strong> {{ seguimiento.get_estado_display }} · <strong>Máxima mora:</strong> {{ seguimiento.max_dias_mora }} días</p>
     <p><strong>Fecha prevista de cierre:</strong> {{ seguimiento.fecha_cierre_prevista|date:'d/m/Y' }}</p>
     <a class="btn" href="{% url 'consulta_scoring_app:seguimiento_detalle' seguimiento.pk %}">Consultar seguimiento</a>
   {% elif puede_crear_seguimiento %}
-    <p>La decisión aprobada permite registrar un seguimiento de crédito simulado.</p>
-    <a class="btn" href="{% url 'consulta_scoring_app:seguimiento_nuevo' evaluacion.pk %}">Crear seguimiento ficticio</a>
+    <a class="btn" href="{% url 'consulta_scoring_app:seguimiento_nuevo' evaluacion.pk %}">Crear seguimiento</a>
   {% else %}
     <p class="muted">Sin seguimiento. Solo las decisiones aprobadas tienen seguimiento crediticio.</p>
   {% endif %}
@@ -64,7 +62,6 @@
       <tr><th>Total cuotas mensuales</th><td>Gs. {{ evaluacion.entradas.captura_financiera.total_cuotas_mensuales_gs|intcomma }}</td></tr>
     </tbody></table>
   {% endif %}
-  <p class="muted">Datos declarados al momento de la evaluación; no se actualizan con cambios posteriores.</p>
 </div>
 {% endif %}
 <div class="card">

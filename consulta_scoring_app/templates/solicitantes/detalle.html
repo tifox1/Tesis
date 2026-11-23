@@ -3,7 +3,6 @@
 {% block content %}
 <div class="card">
   <h1>{{ solicitante.nombres }} {{ solicitante.apellidos }}</h1>
-  <p class="muted">Ficha de solicitante #{{ solicitante.id }} — datos ficticios de demostración</p>
   <div class="grid">
     <div><strong>Cédula:</strong> {{ solicitante.cedula }}</div>
     <div><strong>Nacimiento:</strong> {{ solicitante.fecha_nacimiento|date:'d/m/Y' }}</div>
@@ -19,7 +18,6 @@
 </div>
 <div class="card">
   <h2>Historial de evaluaciones accesibles</h2>
-  <p class="muted">Las evaluaciones son instantáneas históricas: modificar la ficha no modifica las puntuaciones anteriores.</p>
   <table>
     <thead><tr><th>Evaluación</th><th>Fecha</th><th>Score</th><th>Banda</th><th>Analista</th><th></th></tr></thead>
     <tbody>

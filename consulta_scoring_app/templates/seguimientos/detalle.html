@@ -2,8 +2,7 @@
 {% block title %}Seguimiento #{{ seguimiento.pk }}{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Seguimiento académico #{{ seguimiento.pk }}</h1>
-  <div class="warning">Los datos de este crédito son exclusivamente ficticios y no prueban desempeño predictivo observado en una cartera real.</div>
+  <h1>Seguimiento #{{ seguimiento.pk }}</h1>
   <p><strong>Solicitante:</strong>
   {% if seguimiento.decision.evaluacion.solicitante %}
     <a href="{% url 'consulta_scoring_app:solicitante_detalle' seguimiento.decision.evaluacion.solicitante.pk %}">{{ seguimiento.decision.evaluacion.solicitante.nombres }} {{ seguimiento.decision.evaluacion.solicitante.apellidos }}</a> — CI {{ seguimiento.decision.evaluacion.solicitante.cedula }}
@@ -13,7 +12,7 @@
   <div class="grid">
     <div class="metric"><span>Score original</span><strong>{{ seguimiento.decision.evaluacion.score|floatformat:1 }}</strong></div>
     <div class="metric"><span>Máximo de mora observado</span><strong>{{ seguimiento.max_dias_mora }} días</strong></div>
-    <div><strong>Otorgamiento simulado:</strong> {{ seguimiento.fecha_otorgamiento|date:'d/m/Y' }}</div>
+    <div><strong>Fecha de otorgamiento:</strong> {{ seguimiento.fecha_otorgamiento|date:'d/m/Y' }}</div>
     <div><strong>Cierre previsto:</strong> {{ seguimiento.fecha_cierre_prevista|date:'d/m/Y' }}</div>
     <div><strong>Observación hasta:</strong> {{ seguimiento.fecha_observacion|date:'d/m/Y' }}</div>
     <div><strong>Estado:</strong> {{ seguimiento.get_estado_display }}</div>

@@ -4,7 +4,6 @@
 <div class="card">
   <h1>Decisión de evaluación #{{ evaluacion.pk }}</h1>
   <p>Score {{ evaluacion.score|floatformat:1 }} — Banda {{ evaluacion.banda }} — {{ evaluacion.nivel_riesgo }}</p>
-  <div class="warning">Decisión simulada de una tesis. No concede un préstamo ni desembolsa dinero. Una decisión aprobada debe elegir una oferta realmente generada por el motor.</div>
 </div>
 <form method="post" class="card">
   {% csrf_token %}

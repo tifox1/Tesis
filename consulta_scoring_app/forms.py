@@ -272,10 +272,10 @@ class SeguimientoCreditoForm(forms.ModelForm):
             'observaciones': forms.Textarea(attrs={'rows': 3}),
         }
         labels = {
-            'fecha_otorgamiento': 'Fecha de otorgamiento simulado',
+            'fecha_otorgamiento': 'Fecha de otorgamiento',
             'fecha_cierre_prevista': 'Fecha prevista de cierre',
-            'fecha_observacion': 'Fecha de observación simulada',
-            'estado': 'Estado del crédito simulado',
+            'fecha_observacion': 'Fecha de observación',
+            'estado': 'Estado del crédito',
             'max_dias_mora': 'Máximo de días de mora observados',
             'observaciones': 'Observaciones (opcionales)',
         }

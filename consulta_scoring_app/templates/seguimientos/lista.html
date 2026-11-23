@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Seguimientos académicos{% endblock %}
+{% block title %}Seguimientos{% endblock %}
 {% block content %}
 <div class="card">
   <h1>Seguimiento crediticio</h1>
-  <div class="warning"><strong>Prototipo académico:</strong> los créditos, las decisiones y los estados de esta sección son simulados. No constituyen operaciones bancarias ni estadísticas reales de mora.</div>
-  <p>Consultá los seguimientos vinculados a evaluaciones y decisiones aprobadas. Cada expediente puede recuperarse por el número de cédula del solicitante ficticio.</p>
   <form method="get" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap">
     <div class="field" style="flex:1;margin:0;min-width:170px">
       <label for="ci">Cédula de identidad</label>
-      <input id="ci" type="text" name="ci" value="{{ consulta }}" placeholder="Número de CI ficticia">
+      <input id="ci" type="text" name="ci" value="{{ consulta }}" placeholder="Número de cédula">
     </div>
     <div class="field" style="flex:1;margin:0;min-width:170px">
       <label for="estado">Estado</label>
@@ -22,7 +20,7 @@
   </form>
 </div>
 <div class="card">
-  <h2>Créditos simulados con seguimiento</h2>
+  <h2>Seguimientos registrados</h2>
   <table>
     <thead><tr><th>Seguimiento</th><th>CI</th><th>Evaluación</th><th>Estado</th><th>Cierre previsto</th><th>Máx. mora</th><th></th></tr></thead>
     <tbody>

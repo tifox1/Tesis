@@ -3,7 +3,6 @@
 {% block content %}
 <div class="card">
   <h1>Auditoría de operaciones</h1>
-  <p class="muted">Últimos 200 eventos. Registros de operaciones del prototipo; no contienen cédulas ni datos de las predicciones.</p>
   <form method="get" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:18px">
     <div><label for="accion">Acción</label><select id="accion" name="accion"><option value="">Todas</option>
       {% for valor,etiqueta in acciones %}<option value="{{ valor }}" {% if accion_actual == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
